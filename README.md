@@ -1,2 +1,2 @@
 # poweremu
-multi-core emulator project
+multiple-core emulation project

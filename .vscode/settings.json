@@ -1,0 +1,22 @@
+{
+    "files.associations": {
+        "ostream": "c"
+    },
+    "makefile.launchConfigurations": [
+        {
+            "cwd": "c:\\pGithub\\poweremu\\build\\debug",
+            "binaryPath": "c:\\pGithub\\poweremu\\build\\debug\\poweremu",
+            "binaryArgs": []
+        },
+        {
+            "cwd": "c:\\pGithub\\poweremu\\build\\release",
+            "binaryPath": "c:\\pGithub\\poweremu\\build\\release\\poweremu",
+            "binaryArgs": []
+        },
+        {
+            "cwd": "c:\\pGithub\\poweremu\\build\\debug",
+            "binaryPath": "c:\\pGithub\\poweremu\\build\\debug\\poweremu-debug",
+            "binaryArgs": []
+        }
+    ],
+}
