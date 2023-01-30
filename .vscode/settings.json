@@ -17,6 +17,11 @@
             "cwd": "c:\\pGithub\\poweremu\\build\\debug",
             "binaryPath": "c:\\pGithub\\poweremu\\build\\debug\\poweremu-debug",
             "binaryArgs": []
+        },
+        {
+            "cwd": "c:\\Users\\jtoka\\OneDrive\\Documents\\GitHub\\poweremu\\build\\debug",
+            "binaryPath": "c:\\Users\\jtoka\\OneDrive\\Documents\\GitHub\\poweremu\\build\\debug\\poweremu-debug",
+            "binaryArgs": []
         }
     ],
 }
