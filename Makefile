@@ -6,10 +6,10 @@ OBJS = main.cpp
 CC = g++
 
 #INCLUDE_PATHS specifies the additional include paths we'll need
-INCLUDE_PATHS = -I.\lib\SDL2\include\SDL2
+INCLUDE_PATHS = -IC:\development_libraries\SDL2\include\SDL2
 
 #LIBRARY_PATHS specifies the additional library paths we'll need
-LIBRARY_PATHS = -L.\lib\SDL2\lib
+LIBRARY_PATHS = -Lc:\development_libraries\SDL2\lib
 
 #COMPILER_FLAGS specifies the additional compilation options we're using
 # -w suppresses all warnings
