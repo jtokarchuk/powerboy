@@ -1,52 +1,46 @@
-#OBJS specifies which files to compile as part of the project
-OBJS = $(wildcard src/*.c) \
-	   $(wildcard src/cpu/*.c)
+BINARY       := poweremu
+OBJ          := obj
+BUILD        := 
+SOURCES      := src src/cpu
+CFLAGS       := -Wall 
+DEBUG_CFLAGS := -Wall
+LIBS         := 
+INCLUDES     := -Iinclude
+CLEAN_CMD    :=
 
+CFILES   := $(foreach dir,$(SOURCES),$(wildcard $(dir)/*.c))
+HFILES   := $(wildcard include/*.h)
+OFILES   := $(patsubst %.c,$(OBJ)/%.o,$(CFILES))
 
-#CC specifies which compiler we're using
-CC = gcc
-
-#INCLUDE_PATHS specifies the additional include paths we'll need
-INCLUDE_PATHS = -I
-
-#LIBRARY_PATHS specifies the additional library paths we'll need
-LIBRARY_PATHS = -L
-
-#COMPILER_FLAGS specifies the additional compilation options we're using
-# -w suppresses all warnings
-# -Wl,-subsystem,windows gets rid of the console window
-COMPILER_FLAGS = -w -Wl,-subsystem,windows
-DEBUG_COMPILER_FLAGS = -w
-
-
-#LINKER_FLAGS specifies the libraries we're linking against
-LINKER_FLAGS = -lmingw32
-
-#OBJ_NAME specifies the name of our exectuable
-OBJ_NAME = poweremu
-DEBUG_OBJ_NAME = poweremu-debug
-
-RELEASE_PATH = .\build\release
-DEBUG_PATH = .\build\debug
-
-ifdef OS
-	RM = del /Q
-	DEL_FILES = *.exe
+# set the cleanup commands
+ifeq ($(OS),Windows_NT)
+	CLEAN_CMD += @del obj\* /Q && @del build\release\* /Q  && @del build\debug\* /Q 
 else
-	ifeq ($(shell uname), Linux)
-		RM = rm -f
-		DEL_FILES = *.out
-	endif
+	CLEAN_CMD += @rm -rf obj\* && @rm -rf build\release\* && @rm -rf build\debug\*
 endif
 
-#This is the target that compiles our executable
-all : $(OBJS)
-	$(CC) $(OBJS) $(INCLUDE_PATHS) $(LIBRARY_PATHS) $(COMPILER_FLAGS) $(LINKER_FLAGS) -o $(RELEASE_PATH)\$(OBJ_NAME)
+# set the build directory
+ifeq ($(MAKECMDGOALS), all)
+	BUILD += $(CURDIR)/build/release
+	ifeq ($(OS),Windows_NT)
+		CFLAGS +=-Wl,-subsystem,windows
+	endif
+endif
+ifeq ($(MAKECMDGOALS), debug)
+	BUILD += $(CURDIR)/build/debug
+endif
 
-debug : $(OBJS)
-	$(CC) $(OBJS) $(INCLUDE_PATHS) $(LIBRARY_PATHS) $(DEBUG_COMPILER_FLAGS) $(LINKER_FLAGS) -o $(DEBUG_PATH)\$(DEBUG_OBJ_NAME)
+all: $(BUILD)/$(BINARY)
 
-.PHONY : clean
-clean :
-	$(RM) $(DEBUG_PATH)\$(DEL_FILES)
-	$(RM) $(RELEASE_PATH)\$(DEL_FILES)
+$(BUILD)/$(BINARY): $(OFILES)
+	@cd $(OBJ) && \
+	gcc -o $@ $(CFLAGS) $(LIBS) $(notdir $^) && \
+	@cd ..
+
+$(OBJ)/%.o: %.c $(HFILES) $(OBJ)
+	gcc -c -o $(OBJ)/$(notdir $@) $(CFLAGS) $(INCLUDES) $<
+
+debug: $(BUILD)/$(BINARY)
+
+clean:
+	$(CLEAN_CMD)
