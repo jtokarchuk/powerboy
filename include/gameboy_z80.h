@@ -1,4 +1,4 @@
-#ifndef _gameDoy_z80
+#ifndef _gameboy_z80
 #define _gameboy_z80
 
 #include <stdint.h>
