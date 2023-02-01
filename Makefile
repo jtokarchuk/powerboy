@@ -1,4 +1,4 @@
-BINARY       := poweremu
+BINARY       := powerboy
 OBJ          := obj
 BUILD        := 
 SOURCES      := src src/cpu
