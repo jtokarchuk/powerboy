@@ -1,2 +1,2 @@
-# poweremu
-multiple-core emulation project
+# powerboy
+gameboy/gameboy color emulation project
