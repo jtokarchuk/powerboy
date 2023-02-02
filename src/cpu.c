@@ -259,6 +259,6 @@ const struct cpu_instruction cpu_instructions[256] = {
     { "RST 7", 1, 4 }
 };
 
-const struct cpu_instruction cpu_prefix_cb_instructions[256] = {
+//const struct cpu_instruction cpu_prefix_cb_instructions[256] = {
 
-};
+//};
