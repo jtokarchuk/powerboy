@@ -1,7 +1,7 @@
 BINARY       := powerboy
 OBJ          := obj
 BUILD        := 
-SOURCES      := src src/cpu
+SOURCES      := src
 CFLAGS       := -Wall 
 DEBUG_CFLAGS := -Wall
 LIBS         := 

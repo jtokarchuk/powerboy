@@ -1,7 +1,8 @@
 {
     "files.associations": {
         "ostream": "c",
-        "iostream": "cpp"
+        "iostream": "cpp",
+        "cpu.h": "c"
     },
     "makefile.launchConfigurations": [
         {
