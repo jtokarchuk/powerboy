@@ -9,6 +9,11 @@
             "cwd": "c:/pGithub/poweremu/build/debug",
             "binaryPath": "c:\\pGithub\\poweremu\\build\\debug\\poweremu",
             "binaryArgs": []
+        },
+        {
+            "cwd": "c:/pGithub/powerboy/build/debug",
+            "binaryPath": "c:\\pGithub\\powerboy\\build\\debug\\powerboy",
+            "binaryArgs": []
         }
     ],
 }

@@ -14,9 +14,9 @@ OFILES   := $(patsubst %.c,$(OBJ)/%.o,$(CFILES))
 
 # set the cleanup commands
 ifeq ($(OS),Windows_NT)
-	CLEAN_CMD += @del obj\* /Q && @del build\release\* /Q  && @del build\debug\* /Q 
+	CLEAN_CMD += @del obj\* /Q && @del build\release\*.exe /Q  && @del build\debug\*.exe /Q 
 else
-	CLEAN_CMD += @rm -rf obj\* && @rm -rf build\release\* && @rm -rf build\debug\*
+	CLEAN_CMD += @rm -rf obj\* && @rm -rf build\release\*.out && @rm -rf build\debug\*.out
 endif
 
 # set the build directory
