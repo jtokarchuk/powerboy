@@ -1,8 +1,9 @@
 #include <stdio.h>
 #include <string.h>
 #include "cpu.h"
+#include "registers.h"
+#include "mmu.h"
 
-struct cpu gb_cpu;
 const struct cpu_instruction cpu_instructions[256] = {
     { "NOP", 1, 1 },                // 0x00
     { "LD BC, d16", 3, 3 },         
@@ -521,20 +522,65 @@ const struct cpu_instruction cpu_prefix_cb_instructions[256] = {
     { "SET 7, A", 2, 2 },
 };
 
-void cpu_emulate(int opcode) {
+void cpu_reset() {
+    memset(mmu.sram, 0, sizeof(mmu.sram));
+    memset(mmu.vram, 0, sizeof(mmu.vram));
+    memset(mmu.oam, 0, sizeof(mmu.oam));
+    memset(mmu.wram, 0, sizeof(mmu.wram));
+    memset(mmu.hram, 0, sizeof(mmu.hram));
+    memcpy(mmu.io, mmu.bios, sizeof(mmu.io));
 
+    cpu.stopped = false;
+    cpu.ticks = 0;
+
+    registers.a = 0x01;
+    registers.f = 0xb0;
+    registers.b = 0x00;
+    registers.c = 0x13;
+    registers.d = 0x00;
+    registers.e = 0xd8;
+    registers.h = 0x01;
+    registers.l = 0x4d;
+    registers.sp = 0xfffe;
+    registers.pc = 0x100;
 }
 
-bool cpu_unimplemented_instruction(bool CB, uint8_t instruction) {
-    char mnemonic[20];
-    gb_cpu.PC--;
+void cpu_emulate() {
+    unsigned char instruction;
+    unsigned short operand = 0;
 
-    if (CB) {
-        strcpy(mnemonic, cpu_prefix_cb_instructions[instruction].mnemonic);
-    }
-    else {
-        strcpy(mnemonic, cpu_instructions[instruction].mnemonic);
-    }
-    printf("Unimplemented Instruction: %s\n", mnemonic);
-    return true;
+    if (cpu.stopped) return;
+
+    instruction = mmu_read_byte(registers.pc++);
+    
+    if(cpu_instructions[instruction].length == 1) cpu.operand = (unsigned short)mmu_read_byte(registers.pc);
+	if(cpu_instructions[instruction].length == 2) cpu.operand = mmu_read_short(registers.pc);
+	
+    registers.pc += cpu_instructions[instruction].length;
+    // TODO: add functions to all instruction tables
+    // TODO: declare all functions in header for 
+    switch(cpu_instructions[instruction].length) {
+		case 0:
+			((void (*)(void))cpu_instructions[instruction].function)();
+			break;
+		
+		case 1:
+			((void (*)(unsigned char))cpu_instructions[instruction].function)((unsigned char)cpu.operand);
+			break;
+		
+		case 2:
+			((void (*)(unsigned short))cpu_instructions[instruction].function)(cpu.operand);
+			break;
+	}
+	
+	cpu.ticks += cpu_instructions[instruction].cycles;
+}
+
+void cpu_unimplemented_instruction() {
+    char mnemonic[20];
+    registers.pc--;
+    unsigned char instruction = mmu_read_byte(registers.pc);
+    
+    strcpy(mnemonic, cpu_instructions[instruction].mnemonic);
+    printf("Unimplemented Instruction: %02x: %s\n", instruction, mnemonic);
 }

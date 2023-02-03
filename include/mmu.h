@@ -1,15 +1,16 @@
 #pragma once
+#include <stdlib.h>
 
 struct mmu {
-    const unsigned char gb_bios[0x100];
-    unsigned char cart[0x8000];
+    const unsigned char bios[0x100];
+    unsigned char cartridge[0x8000];
     unsigned char sram[0x2000];
     unsigned char io[0x100];
     unsigned char vram[0x2000];
     unsigned char oam[0x100];
     unsigned char wram[0x2000];
     unsigned char hram[0x80];
-};
+} extern mmu;
 
 void mmu_copy(unsigned short destination, unsigned short source, size_t length);
 
