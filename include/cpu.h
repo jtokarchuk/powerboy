@@ -3,10 +3,10 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-const unsigned char ZERO_FLAG_BYTE_POSITION  = 7;
-const unsigned char SUBTRACT_FLAG_BYTE_POSITION  = 6;
-const unsigned char HALF_CARRY_FLAG_BYTE_POSITION  = 5;
-const unsigned char CARRY_FLAG_BYTE_POSITION  = 4;
+#define FLAG_Z 7
+#define FLAG_N 6
+#define FLAG_H 5
+#define FLAG_C 4
 
 unsigned short cpu_get_combined_registers(unsigned char high, unsigned char low);
 unsigned char cpu_compile_flag_register();
@@ -17,6 +17,7 @@ void cpu_unimplemented_instruction();
 
 struct cpu {
     bool stopped;
+    float emulation_speed;
     int ticks;
     unsigned short operand;
     bool flag_zero;
@@ -31,4 +32,3 @@ struct cpu_instruction {
     int cycles;
     void *function;
 };
-

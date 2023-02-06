@@ -1,10 +1,4 @@
 {
-    "files.associations": {
-        "ostream": "c",
-        "iostream": "cpp",
-        "cpu.h": "c",
-        "mmu.h": "c"
-    },
     "makefile.launchConfigurations": [
         {
             "cwd": "c:/pGithub/poweremu/build/debug",

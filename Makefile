@@ -4,8 +4,9 @@ BUILD        :=
 SOURCES      := src
 CFLAGS       := -Wall 
 DEBUG_CFLAGS := -Wall
-LIBS         := 
-INCLUDES     := -Iinclude
+LIBS         := -LC:\development_libraries\SDL2\lib
+INCLUDES     := -Iinclude -IC:\development_libraries\SDL2\include\SDL2
+LINKER_FLAGS := -lmingw32 -lSDL2main -lSDL2
 CLEAN_CMD    :=
 
 CFILES   := $(foreach dir,$(SOURCES),$(wildcard $(dir)/*.c))
@@ -34,7 +35,7 @@ all: $(BUILD)/$(BINARY)
 
 $(BUILD)/$(BINARY): $(OFILES)
 	@cd $(OBJ) && \
-	gcc -o $@ $(CFLAGS) $(LIBS) $(notdir $^) && \
+	gcc -o $@ $(CFLAGS) $(notdir $^) $(LIBS) $(LINKER_FLAGS) && \
 	@cd ..
 
 $(OBJ)/%.o: %.c $(HFILES) $(OBJ)
