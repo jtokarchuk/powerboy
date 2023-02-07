@@ -9,13 +9,19 @@
 #define GPU_CONTROL_WINDOWTILEMAP (1 << 6)
 #define GPU_CONTROL_DISPLAYENABLE (1 << 7)
 
+#define GPU_MAX_FPS 60
+
 #include <SDL.h>
+#include <stdbool.h>
 #include "display.h"
 
 bool gpu_init();
 void gpu_exit();
 void gpu_emulate();
 void gpu_draw_screen();
+
+extern SDL_Event gpu_sdl_event;
+extern int gpu_counted_frames;
 
 //The window we'll be rendering to
 extern SDL_Window* gpu_window;
@@ -28,8 +34,8 @@ extern SDL_Surface* gpu_display;
 
 struct gpu {
 	unsigned char control;
-	unsigned char scrollX;
-	unsigned char scrollY;
+	unsigned char scroll_x;
+	unsigned char scroll_y;
 	unsigned char scanline;
 	unsigned long tick;
 } extern gpu;
@@ -39,23 +45,22 @@ struct sprite {
 		unsigned char y;
 		unsigned char x;
 		unsigned char tile;
-		struct options {
-				unsigned char priority : 1;
-				unsigned char vFlip : 1;
-				unsigned char hFlip : 1;
-				unsigned char palette : 1;
-		};
+
+		unsigned char priority : 1;
+		unsigned char vFlip : 1;
+		unsigned char hFlip : 1;
+		unsigned char palette : 1;
+
 	#else
 		unsigned char y;
 		unsigned char x;
 		unsigned char tile;
-		struct options {
-			//unsigned char dummy : 4;
-			unsigned char palette : 1;
-			unsigned char hFlip : 1;
-			unsigned char vFlip : 1;
-			unsigned char priority : 1;
-		};
+
+		//unsigned char dummy : 4;
+		unsigned char palette : 1;
+		unsigned char hFlip : 1;
+		unsigned char vFlip : 1;
+		unsigned char priority : 1;
 	#endif
 };
 
@@ -66,7 +71,5 @@ extern COLOUR gpu_sprite_palette[2][4];
 
 
 void gpu_hblank();
-
-void gpu_render_scanline();
 
 void gpu_update_tile(unsigned short address, unsigned char value);

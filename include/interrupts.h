@@ -12,7 +12,7 @@ struct interrupt {
     unsigned char flags;
 } extern interrupt;
 
-void interrupts_emulate();
+extern void interrupts_emulate();
 
 void interrupts_vblank();
 void interrupts_lcd_stat();

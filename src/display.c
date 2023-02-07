@@ -2,6 +2,8 @@
 #include "mmu.h"
 #include "gpu.h"
 
+#include <stdio.h>
+
 COLOUR display_framebuffer[160*144];
 
 const COLOUR display_palette[4] = {
@@ -11,7 +13,7 @@ const COLOUR display_palette[4] = {
     { 0, 0, 0 },
 };
 
-void renderScanline(void) {
+void display_render_scanline() {
 	
 	int mapOffset = (gpu.control & GPU_CONTROL_TILEMAP) ? 0x1c00 : 0x1800;
 	mapOffset += (((gpu.scanline + gpu.scroll_y) & 255) >> 3) << 5;
@@ -32,7 +34,7 @@ void renderScanline(void) {
 	// if bg enabled
 	int i;
 	for(i = 0; i < 160; i++) {
-		unsigned char colour = tiles[tile][y][x];
+		unsigned char colour = gpu_tiles[tile][y][x];
 		
 		scanlineRow[i] = colour;
 		
@@ -71,8 +73,8 @@ void renderScanline(void) {
 				if(sx + x >= 0 && sx + x < 160 && (~sprite.priority || !scanlineRow[sx + x])) {
 					unsigned char colour;
 					
-					if(sprite.hFlip) colour = tiles[sprite.tile][tileRow][7 - x];
-					else colour = tiles[sprite.tile][tileRow][x];
+					if(sprite.hFlip) colour = gpu_tiles[sprite.tile][tileRow][7 - x];
+					else colour = gpu_tiles[sprite.tile][tileRow][x];
 					
 					if(colour) {
                         display_framebuffer[pixelOffset].r = pal[colour].r;
@@ -80,12 +82,14 @@ void renderScanline(void) {
                         display_framebuffer[pixelOffset].b = pal[colour].b;
 
 						pixelOffset++;
+					}
 				}
 			}
 		}
 	}
 }
 
-void display_drawframebuffer(void) {
+void display_draw_framebuffer() {
     // to implement
+	printf("test draw framebuffer\n");
 }

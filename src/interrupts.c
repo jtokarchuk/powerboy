@@ -41,7 +41,7 @@ void interrupts_vblank() {
     gpu_draw_screen();
 
     interrupt.master = 0;
-    mmu_write_short_to_stack(registers.pc)
+    mmu_write_short_to_stack(registers.pc);
     registers.pc = 0x40;
     cpu.ticks += 12;
 }
@@ -51,6 +51,14 @@ void interrupts_lcd_stat() {
     mmu_write_short_to_stack(registers.pc);
     registers.pc = 0x50;
     cpu.ticks += 12;
+}
+
+void interrupts_timer() {
+	interrupt.master = 0;
+	mmu_write_short_to_stack(registers.pc);
+	registers.pc = 0x50;
+	
+	cpu.ticks += 12;
 }
 
 void interrupts_serial() {
@@ -68,6 +76,6 @@ void interrupts_joypad() {
 }
 
 void interrupts_return() {
-    interrupt.master = 1
+    interrupt.master = 1;
     registers.pc = mmu_read_short_from_stack();
 }

@@ -3,10 +3,19 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#define FLAG_Z 7
-#define FLAG_N 6
-#define FLAG_H 5
-#define FLAG_C 4
+#define FLAGS_ZERO (1 << 7)
+#define FLAGS_NEGATIVE (1 << 6)
+#define FLAGS_HALFCARRY (1 << 5)
+#define FLAGS_CARRY (1 << 4)
+
+#define FLAGS_ISZERO (registers.f & FLAGS_ZERO)
+#define FLAGS_ISNEGATIVE (registers.f & FLAGS_NEGATIVE)
+#define FLAGS_ISCARRY (registers.f & FLAGS_CARRY)
+#define FLAGS_ISHALFCARRY (registers.f & FLAGS_HALFCARRY)
+
+#define FLAGS_ISSET(x) (registers.f & (x))
+#define FLAGS_SET(x) (registers.f |= (x))
+#define FLAGS_CLEAR(x) (registers.f &= ~(x))
 
 #define CPU_CLOCKSPEED 4194304;
 
@@ -26,6 +35,7 @@ struct cpu {
     bool flag_subtract;
     bool flag_half_carry;
     bool flag_carry;
+    unsigned short last_instruction;
 } extern cpu;
 
 struct cpu_instruction {
@@ -34,3 +44,12 @@ struct cpu_instruction {
     int cycles;
     void *function;
 };
+
+// 0x00
+void cpu_nop();
+//0x01
+void cpu_ld_bc_nn(unsigned short operand);
+//0xc3
+void jp_nn(unsigned short operand);
+//0xcf
+void rst_1();

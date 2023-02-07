@@ -9,5 +9,7 @@ struct rgb {
 typedef struct rgb COLOUR;
 
 extern COLOUR display_framebuffer[160 * 144];
-void display_draw_framebuffer();
-extern const COLOUR palette[4];
+extern const COLOUR display_palette[4];
+
+extern void display_draw_framebuffer();
+extern void display_render_scanline();

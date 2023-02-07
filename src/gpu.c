@@ -14,6 +14,10 @@ SDL_Surface* gpu_display = NULL;
 
 COLOUR gpu_background_palette[4];
 COLOUR gpu_sprite_palette[2][4];
+unsigned char gpu_tiles[384][8][8];
+
+SDL_Event gpu_sdl_event;
+
 
 struct gpu gpu;
 
@@ -60,7 +64,7 @@ void gpu_exit() {
 
 void gpu_draw_screen() {
     printf("VBLANK CALLED");
-    display_draw_framebuffer()
+    display_draw_framebuffer();
 }
 
 void gpu_emulate(void) {
@@ -121,11 +125,7 @@ void gpu_emulate(void) {
 		case GPU_MODE_VRAM:
 			if(gpu.tick >= 172) {
 				gpuMode = GPU_MODE_HBLANK;
-				
-				#ifndef DS
-					renderScanline();
-				#endif
-				
+				display_render_scanline();
 				gpu.tick -= 172;
 			}
 			
@@ -148,6 +148,6 @@ void gpu_update_tile(unsigned short address, unsigned char value) {
 		bitIndex = 1 << (7 - x);
 		
 		//((unsigned char (*)[8][8])tiles)[tile][y][x] = ((vram[address] & bitIndex) ? 1 : 0) + ((vram[address + 1] & bitIndex) ? 2 : 0);
-		tiles[tile][y][x] = ((mmu.vram[address] & bitIndex) ? 1 : 0) + ((mmu.vram[address + 1] & bitIndex) ? 2 : 0);
+		gpu_tiles[tile][y][x] = ((mmu.vram[address] & bitIndex) ? 1 : 0) + ((mmu.vram[address + 1] & bitIndex) ? 2 : 0);
 	}
 }

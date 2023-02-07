@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <string.h>
 #include "cpu.h"
+#include "gpu.h"
+#include "display.h"
 #include "registers.h"
 #include "mmu.h"
 #include "interrupts.h"
@@ -8,8 +10,8 @@
 struct cpu cpu;
 
 const struct cpu_instruction cpu_instructions[256] = {
-    { "NOP", 1, 1, cpu_unimplemented_instruction },                // 0x00
-    { "LD BC, d16", 3, 3, cpu_unimplemented_instruction },         
+    { "NOP", 1, 1, cpu_nop },                // 0x00
+    { "LD BC, d16", 3, 3, cpu_ld_bc_nn },         
     { "LD (BC), A", 1, 2, cpu_unimplemented_instruction },         
     { "INC BC", 1, 2, cpu_unimplemented_instruction },             
     { "INC B", 1, 1, cpu_unimplemented_instruction },             
@@ -203,7 +205,7 @@ const struct cpu_instruction cpu_instructions[256] = {
     { "RET NZ", 1, 1, cpu_unimplemented_instruction },                 // 0xC0
     { "POP BC", 1, 1, cpu_unimplemented_instruction },
     { "JP NZ, a16", 1, 1, cpu_unimplemented_instruction },
-    { "JP a16", 1, 1, cpu_unimplemented_instruction },
+    { "JP 0x%04X", 1, 1, jp_nn },
     { "CALL NZ, a16", 1, 1, cpu_unimplemented_instruction },
     { "PUSH BC", 1, 1, cpu_unimplemented_instruction },
     { "ADD A, d8", 1, 1, cpu_unimplemented_instruction },
@@ -215,7 +217,7 @@ const struct cpu_instruction cpu_instructions[256] = {
     { "CALL Z, a16", 1, 1, cpu_unimplemented_instruction },
     { "CALL a16", 1, 1, cpu_unimplemented_instruction },
     { "ADC A, d8", 1, 1, cpu_unimplemented_instruction },
-    { "RST 1", 1, 1, cpu_unimplemented_instruction },
+    { "RST 1", 1, 1, rst_1 },
     { "RET NC", 1, 1, cpu_unimplemented_instruction },                 // 0xD0
     { "POP DE", 1, 1, cpu_unimplemented_instruction },
     { "JP NC, a16", 1, 1, cpu_unimplemented_instruction },
@@ -551,6 +553,63 @@ void cpu_reset() {
     interrupt.master = 1;
     interrupt.enable = 0;
     interrupt.flags = 0;
+
+    gpu_background_palette[0] = display_palette[0];
+	gpu_background_palette[1] = display_palette[1];
+	gpu_background_palette[2] = display_palette[2];
+	gpu_background_palette[3] = display_palette[3];
+	
+	gpu_sprite_palette[0][0] = display_palette[0];
+	gpu_sprite_palette[0][1] = display_palette[1];
+	gpu_sprite_palette[0][2] = display_palette[2];
+	gpu_sprite_palette[0][3] = display_palette[3];
+	
+	gpu_sprite_palette[1][0] = display_palette[0];
+	gpu_sprite_palette[1][1] = display_palette[1];
+	gpu_sprite_palette[1][2] = display_palette[2];
+	gpu_sprite_palette[1][3] = display_palette[3];
+	
+	gpu.control = 0;
+	gpu.scroll_x = 0;
+	gpu.scroll_y = 0;
+	gpu.scanline = 0;
+	gpu.tick = 0;
+
+    memset(gpu_tiles, 0, sizeof(gpu_tiles));
+	memset(display_framebuffer, 255, sizeof(display_framebuffer));
+
+	
+	mmu_write_byte(0xFF05, 0);
+	mmu_write_byte(0xFF06, 0);
+	mmu_write_byte(0xFF07, 0);
+	mmu_write_byte(0xFF10, 0x80);
+	mmu_write_byte(0xFF11, 0xBF);
+	mmu_write_byte(0xFF12, 0xF3);
+	mmu_write_byte(0xFF14, 0xBF);
+	mmu_write_byte(0xFF16, 0x3F);
+	mmu_write_byte(0xFF17, 0x00);
+	mmu_write_byte(0xFF19, 0xBF);
+	mmu_write_byte(0xFF1A, 0x7A);
+	mmu_write_byte(0xFF1B, 0xFF);
+	mmu_write_byte(0xFF1C, 0x9F);
+	mmu_write_byte(0xFF1E, 0xBF);
+	mmu_write_byte(0xFF20, 0xFF);
+	mmu_write_byte(0xFF21, 0x00);
+	mmu_write_byte(0xFF22, 0x00);
+	mmu_write_byte(0xFF23, 0xBF);
+	mmu_write_byte(0xFF24, 0x77);
+	mmu_write_byte(0xFF25, 0xF3);
+	mmu_write_byte(0xFF26, 0xF1);
+	mmu_write_byte(0xFF40, 0x91);
+	mmu_write_byte(0xFF42, 0x00);
+	mmu_write_byte(0xFF43, 0x00);
+	mmu_write_byte(0xFF45, 0x00);
+	mmu_write_byte(0xFF47, 0xFC);
+	mmu_write_byte(0xFF48, 0xFF);
+	mmu_write_byte(0xFF49, 0xFF);
+	mmu_write_byte(0xFF4A, 0x00);
+	mmu_write_byte(0xFF4B, 0x00);
+	mmu_write_byte(0xFFFF, 0x00);
 }
 
 void cpu_emulate() {
@@ -560,17 +619,20 @@ void cpu_emulate() {
     const int MAXCYCLES = 69905; // the maximum amount of cpu cycles per frame
     cpu.ticks = 0;
     
-    while (cpu.ticks < MAXCYCLES) {
-        if (cpu.stopped) return;
+    while (cpu.ticks < MAXCYCLES && !cpu.stopped) {
+        instruction = mmu_read_byte(registers.pc);
+        cpu.last_instruction = instruction;
 
-        instruction = mmu_read_byte(registers.pc++);
-        
         if(cpu_instructions[instruction].length == 1) cpu.operand = (unsigned short)mmu_read_byte(registers.pc);
         if(cpu_instructions[instruction].length == 2) cpu.operand = mmu_read_short(registers.pc);
+
         
-        registers.pc += cpu_instructions[instruction].length;
         // TODO: add functions to all instruction tables
         // TODO: declare all functions in header for 
+        if (cpu_instructions[instruction].function != cpu_unimplemented_instruction) {
+            printf("Executing Instruction: 0x%02x: %s, Operand: 0x%04x\n", instruction, cpu_instructions[instruction].mnemonic, cpu.operand);
+        }
+        
         switch(cpu_instructions[instruction].length) {
             case 0:
                 ((void (*)(void))cpu_instructions[instruction].function)();
@@ -585,22 +647,180 @@ void cpu_emulate() {
                 break;
         }
         
+        registers.pc += cpu_instructions[instruction].length;
         cpu.ticks += cpu_instructions[instruction].cycles;
-
-        // update timers with cpu_instructions[instruction].cycles
-        // update graphics with cpu_instructions[instruction].cycles
-        // do interrupts
     }
 }
 
 void cpu_unimplemented_instruction() {
     char mnemonic[20];
-    registers.pc--;
-    unsigned char instruction = mmu_read_byte(registers.pc);
     
-    strcpy(mnemonic, cpu_instructions[instruction].mnemonic);
-    printf("Unimplemented Instruction: %02x: %s\n", instruction, mnemonic);
-    printf("Halting CPU");
+    strcpy(mnemonic, cpu_instructions[cpu.last_instruction].mnemonic);
+    printf("Unimplemented Instruction: 0x%02x: %s\n", cpu.last_instruction, mnemonic);
+    printf("Halting CPU\n");
     cpu.stopped = true;
 }
 
+static unsigned char inc(unsigned char value) {
+	if((value & 0x0f) == 0x0f) FLAGS_SET(FLAGS_HALFCARRY);
+	else FLAGS_CLEAR(FLAGS_HALFCARRY);
+	
+	value++;
+	
+	if(value) FLAGS_CLEAR(FLAGS_ZERO);
+	else FLAGS_SET(FLAGS_ZERO);
+	
+	FLAGS_CLEAR(FLAGS_NEGATIVE);
+	
+	return value;
+}
+
+static unsigned char dec(unsigned char value) {
+	if(value & 0x0f) FLAGS_CLEAR(FLAGS_HALFCARRY);
+	else FLAGS_SET(FLAGS_HALFCARRY);
+	
+	value--;
+	
+	if(value) FLAGS_CLEAR(FLAGS_ZERO);
+	else FLAGS_SET(FLAGS_ZERO);
+	
+	FLAGS_SET(FLAGS_NEGATIVE);
+	
+	return value;
+}
+
+static void add(unsigned char *destination, unsigned char value) {
+	unsigned int result = *destination + value;
+	
+	if(result & 0xff00) FLAGS_SET(FLAGS_CARRY);
+	else FLAGS_CLEAR(FLAGS_CARRY);
+	
+	*destination = (unsigned char)(result & 0xff);
+	
+	if(*destination) FLAGS_CLEAR(FLAGS_ZERO);
+	else FLAGS_SET(FLAGS_ZERO);
+	
+	if(((*destination & 0x0f) + (value & 0x0f)) > 0x0f) FLAGS_SET(FLAGS_HALFCARRY);
+	else FLAGS_CLEAR(FLAGS_HALFCARRY);
+	
+	FLAGS_CLEAR(FLAGS_NEGATIVE);
+}
+
+static void add2(unsigned short *destination, unsigned short value) {
+	unsigned long result = *destination + value;
+	
+	if(result & 0xffff0000) FLAGS_SET(FLAGS_CARRY);
+	else FLAGS_CLEAR(FLAGS_CARRY);
+	
+	*destination = (unsigned short)(result & 0xffff);
+	
+	if(((*destination & 0x0f) + (value & 0x0f)) > 0x0f) FLAGS_SET(FLAGS_HALFCARRY);
+	else FLAGS_CLEAR(FLAGS_HALFCARRY);
+	
+	// zero flag left alone
+	
+	FLAGS_CLEAR(FLAGS_NEGATIVE);
+}
+
+static void adc(unsigned char value) {
+	value += FLAGS_ISCARRY ? 1 : 0;
+	
+	int result = registers.a + value;
+	
+	if(result & 0xff00) FLAGS_SET(FLAGS_CARRY);
+	else FLAGS_CLEAR(FLAGS_CARRY);
+	
+	if(value == registers.a) FLAGS_SET(FLAGS_ZERO);
+	else FLAGS_CLEAR(FLAGS_ZERO);
+	
+	if(((value & 0x0f) + (registers.a & 0x0f)) > 0x0f) FLAGS_SET(FLAGS_HALFCARRY);
+	else FLAGS_CLEAR(FLAGS_HALFCARRY);
+	
+	FLAGS_SET(FLAGS_NEGATIVE);
+	
+	registers.a = (unsigned char)(result & 0xff);
+}
+
+static void sbc(unsigned char value) {
+	value += FLAGS_ISCARRY ? 1 : 0;
+	
+	FLAGS_SET(FLAGS_NEGATIVE);
+	
+	if(value > registers.a) FLAGS_SET(FLAGS_CARRY);
+	else FLAGS_CLEAR(FLAGS_CARRY);
+	
+	if(value == registers.a) FLAGS_SET(FLAGS_ZERO);
+	else FLAGS_CLEAR(FLAGS_ZERO);
+	
+	if((value & 0x0f) > (registers.a & 0x0f)) FLAGS_SET(FLAGS_HALFCARRY);
+	else FLAGS_CLEAR(FLAGS_HALFCARRY);
+	
+	registers.a -= value;
+}
+
+static void sub(unsigned char value) {
+	FLAGS_SET(FLAGS_NEGATIVE);
+	
+	if(value > registers.a) FLAGS_SET(FLAGS_CARRY);
+	else FLAGS_CLEAR(FLAGS_CARRY);
+	
+	if((value & 0x0f) > (registers.a & 0x0f)) FLAGS_SET(FLAGS_HALFCARRY);
+	else FLAGS_CLEAR(FLAGS_HALFCARRY);
+	
+	registers.a -= value;
+	
+	if(registers.a) FLAGS_CLEAR(FLAGS_ZERO);
+	else FLAGS_SET(FLAGS_ZERO);
+}
+
+static void and(unsigned char value) {
+	registers.a &= value;
+	
+	if(registers.a) FLAGS_CLEAR(FLAGS_ZERO);
+	else FLAGS_SET(FLAGS_ZERO);
+	
+	FLAGS_CLEAR(FLAGS_CARRY | FLAGS_NEGATIVE);
+	FLAGS_SET(FLAGS_HALFCARRY);
+}
+
+static void or(unsigned char value) {
+	registers.a |= value;
+	
+	if(registers.a) FLAGS_CLEAR(FLAGS_ZERO);
+	else FLAGS_SET(FLAGS_ZERO);
+	
+	FLAGS_CLEAR(FLAGS_CARRY | FLAGS_NEGATIVE | FLAGS_HALFCARRY);
+}
+
+static void xor(unsigned char value) {
+	registers.a ^= value;
+	
+	if(registers.a) FLAGS_CLEAR(FLAGS_ZERO);
+	else FLAGS_SET(FLAGS_ZERO);
+	
+	FLAGS_CLEAR(FLAGS_CARRY | FLAGS_NEGATIVE | FLAGS_HALFCARRY);
+}
+
+static void cp(unsigned char value) {
+	if(registers.a == value) FLAGS_SET(FLAGS_ZERO);
+	else FLAGS_CLEAR(FLAGS_ZERO);
+	
+	if(value > registers.a) FLAGS_SET(FLAGS_CARRY);
+	else FLAGS_CLEAR(FLAGS_CARRY);
+	
+	if((value & 0x0f) > (registers.a & 0x0f)) FLAGS_SET(FLAGS_HALFCARRY);
+	else FLAGS_CLEAR(FLAGS_HALFCARRY);
+	
+	FLAGS_SET(FLAGS_NEGATIVE);
+}
+
+// 0x00
+void cpu_nop() { } //NOP
+// 0x01
+void cpu_ld_bc_nn(unsigned short operand) { registers.bc = operand; }
+
+//0xc3
+void jp_nn(unsigned short operand) { registers.pc = operand; }
+
+//0xcf
+void rst_1() { mmu_write_short_to_stack(registers.pc); registers.pc = 0x0008; }
