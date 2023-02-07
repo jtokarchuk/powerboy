@@ -8,6 +8,8 @@
 #define FLAG_H 5
 #define FLAG_C 4
 
+#define CPU_CLOCKSPEED 4194304;
+
 unsigned short cpu_get_combined_registers(unsigned char high, unsigned char low);
 unsigned char cpu_compile_flag_register();
 void cpu_set_combined_registers(unsigned char high, unsigned char low);

@@ -8,6 +8,7 @@ LIBS         := -LC:\development_libraries\SDL2\lib
 INCLUDES     := -Iinclude -IC:\development_libraries\SDL2\include\SDL2
 LINKER_FLAGS := -lmingw32 -lSDL2main -lSDL2
 CLEAN_CMD    :=
+SETUP_CMD    := @mkdir obj && @mkdir build && @cd build && @mkdir build && @mkdir debug
 
 CFILES   := $(foreach dir,$(SOURCES),$(wildcard $(dir)/*.c))
 HFILES   := $(wildcard include/*.h)
@@ -45,3 +46,6 @@ debug: $(BUILD)/$(BINARY)
 
 clean:
 	$(CLEAN_CMD)
+
+setup:
+	$(SETUP_CMD)

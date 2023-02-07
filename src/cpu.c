@@ -3,6 +3,7 @@
 #include "cpu.h"
 #include "registers.h"
 #include "mmu.h"
+#include "interrupts.h"
 
 struct cpu cpu;
 
@@ -546,11 +547,13 @@ void cpu_reset() {
     registers.l = 0x4d;
     registers.sp = 0xfffe;
     registers.pc = 0x100;
+
+    interrupt.master = 1;
+    interrupt.enable = 0;
+    interrupt.flags = 0;
 }
 
 void cpu_emulate() {
-    if (cpu.stopped) return;
-
     unsigned char instruction;
     cpu.operand = 0;
     
@@ -558,6 +561,7 @@ void cpu_emulate() {
     cpu.ticks = 0;
     
     while (cpu.ticks < MAXCYCLES) {
+        if (cpu.stopped) return;
 
         instruction = mmu_read_byte(registers.pc++);
         
@@ -599,3 +603,4 @@ void cpu_unimplemented_instruction() {
     printf("Halting CPU");
     cpu.stopped = true;
 }
+

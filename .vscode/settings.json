@@ -9,6 +9,11 @@
             "cwd": "c:/pGithub/powerboy/build/debug",
             "binaryPath": "c:\\pGithub\\powerboy\\build\\debug\\powerboy",
             "binaryArgs": []
+        },
+        {
+            "cwd": "c:/Users/jtoka/OneDrive/Documents/GitHub/powerboy/build/debug",
+            "binaryPath": "c:\\Users\\jtoka\\OneDrive\\Documents\\GitHub\\powerboy\\build\\debug\\powerboy",
+            "binaryArgs": []
         }
     ],
 }
