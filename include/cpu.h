@@ -45,11 +45,27 @@ struct cpu_instruction {
     void *function;
 };
 
-// 0x00
 void cpu_nop();
-//0x01
 void cpu_ld_bc_nn(unsigned short operand);
-//0xc3
 void jp_nn(unsigned short operand);
-//0xcf
+
 void rst_1();
+void rst_7();
+
+void inc_a();
+void inc_b();
+void inc_c();
+void inc_d();
+void inc_e();
+void inc_h();
+void inc_l();
+void inc_bc();
+void inc_de();
+void inc_hl();
+void inc_sp();
+
+void ld_bcp_a();
+
+void call_nn(unsigned short operand);
+
+void sub_n(unsigned char operand);
