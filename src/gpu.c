@@ -62,11 +62,6 @@ void gpu_exit() {
     SDL_Quit();
 }
 
-void gpu_draw_screen() {
-    printf("VBLANK CALLED");
-    display_draw_framebuffer();
-}
-
 void gpu_emulate(void) {
 	enum gpuMode {
 		GPU_MODE_HBLANK = 0,

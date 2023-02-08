@@ -368,10 +368,6 @@ void cpu_emulate() {
         if(cpu_instructions[instruction].length == 1) operand = (unsigned short)mmu_read_byte(registers.pc);
         if(cpu_instructions[instruction].length == 2) operand = mmu_read_short(registers.pc); 
 
-        if (cpu_instructions[instruction].function != cpu_unimplemented_instruction) {
-            printf("[Address]: 0x%04x\t[Operand]: 0x%04x\t[Opcode]: 0x%02x: %s\n", registers.pc - 1,  operand, instruction, cpu_instructions[instruction].mnemonic);
-        }
-
         registers.pc += cpu_instructions[instruction].length;
         
         switch(cpu_instructions[instruction].length) {

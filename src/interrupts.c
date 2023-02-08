@@ -38,7 +38,7 @@ void interrupts_emulate() {
 }
 
 void interrupts_vblank() {
-    gpu_draw_screen();
+    display_draw_framebuffer();
 
     interrupt.master = 0;
     mmu_write_short_to_stack(registers.pc);
