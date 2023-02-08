@@ -45,9 +45,41 @@ struct cpu_instruction {
     void *function;
 };
 
-void cpu_nop();
-void cpu_ld_bc_nn(unsigned short operand);
+void nop();
+void ld_bc_nn(unsigned short operand);
+void ld_de_nn(unsigned short operand);
+void ld_hl_nn(unsigned short operand);
+
+void ld_a_a();
+void ld_a_b();
+void ld_a_c();
+void ld_a_d();
+void ld_a_e();
+void ld_a_h();
+void ld_a_l();
+
+void ld_e_a();
+void ld_e_b();
+void ld_e_c();
+void ld_e_d();
+void ld_e_e();
+void ld_e_h();
+void ld_e_l();
+
+void ld_bcp_a();
+
+void ld_a_n(unsigned char operand);
+void ld_b_n(unsigned char operand);
+void ld_c_n(unsigned char operand);
+void ld_d_n(unsigned char operand);
+void ld_e_n(unsigned char operand);
+void ld_h_n(unsigned char operand);
+void ld_l_n(unsigned char operand);
+
+void ld_ff_ap_n(unsigned char operand);
+
 void jp_nn(unsigned short operand);
+void jr_nz_n(unsigned char operand);
 
 void rst_1();
 void rst_7();
@@ -64,8 +96,12 @@ void inc_de();
 void inc_hl();
 void inc_sp();
 
-void ld_bcp_a();
+void dec_b();
+
 
 void call_nn(unsigned short operand);
 
+void add_hl_de();
 void sub_n(unsigned char operand);
+
+void ccf(void);

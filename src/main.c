@@ -72,7 +72,7 @@ int main(int argc, char *argv[]) {
                 case SDL_MOUSEMOTION:
                     break;
                 default: /* Report an unhandled event */
-                    printf("Unknown Event: %d\n", gpu_sdl_event.type);
+                    // printf("Unknown Event: %d\n", gpu_sdl_event.type);
                     break;
             }
         }

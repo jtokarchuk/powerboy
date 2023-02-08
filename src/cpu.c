@@ -6,17 +6,18 @@
 #include "registers.h"
 #include "mmu.h"
 #include "interrupts.h"
+#include "cb.h"
 
 struct cpu cpu;
 
 const struct cpu_instruction cpu_instructions[256] = {
-    { "NOP", 0, 2, cpu_nop },                // 0x00
-    { "LD BC, d16", 2, 6, cpu_ld_bc_nn },         
+    { "NOP", 0, 2, nop },                // 0x00
+    { "LD BC, d16", 2, 6, ld_bc_nn },         
     { "LD (BC), A", 0, 4, ld_bcp_a },         
     { "INC BC", 0, 4, inc_bc },             
     { "INC B", 0, 2, inc_b },             
-    { "DEC B", 0, 2, cpu_unimplemented_instruction },
-    { "LD B, d8", 1, 4, cpu_unimplemented_instruction },
+    { "DEC B", 0, 2, dec_b },
+    { "LD B, d8", 1, 4, ld_b_n },
     { "RLCA", 0, 4, cpu_unimplemented_instruction },
     { "LD (a16), SP", 2, 10, cpu_unimplemented_instruction },
     { "ADD HL, BC", 0, 4, cpu_unimplemented_instruction },
@@ -24,31 +25,31 @@ const struct cpu_instruction cpu_instructions[256] = {
     { "DEC BC", 0, 4, cpu_unimplemented_instruction },
     { "INC C", 0, 2, inc_c },
     { "DEC C", 0, 2, cpu_unimplemented_instruction },
-    { "LD C, d8", 1, 2, cpu_unimplemented_instruction },
+    { "LD C, d8", 1, 2, ld_c_n },
     { "RRCA", 0, 4, cpu_unimplemented_instruction },                         
     { "STOP", 1, 2, cpu_unimplemented_instruction },               // 0x10
-    { "LD DE, d16", 2, 6, cpu_unimplemented_instruction },
+    { "LD DE, d16", 2, 6, ld_de_nn },
     { "LD (DE), A", 0, 4, cpu_unimplemented_instruction },
     { "INC DE", 0, 4, inc_de },
     { "INC D", 0, 2, inc_d },
     { "DEC D", 0, 2, cpu_unimplemented_instruction },
-    { "LD D, d8", 1, 4, cpu_unimplemented_instruction },
+    { "LD D, d8", 1, 4, ld_d_n },
     { "RLA", 0, 4, cpu_unimplemented_instruction },
     { "JR s8", 1, 10, cpu_unimplemented_instruction },
-    { "ADD HL, DE", 0, 4, cpu_unimplemented_instruction },
+    { "ADD HL, DE", 0, 4, add_hl_de },
     { "LD A, (DE)", 0, 4, cpu_unimplemented_instruction },
     { "DEC DE", 0, 4, cpu_unimplemented_instruction },
     { "INC E", 0, 2, inc_e },
     { "DEC E", 0, 2, cpu_unimplemented_instruction },
-    { "LD E, d8", 1, 4, cpu_unimplemented_instruction },
+    { "LD E, d8", 1, 4, ld_d_n },
     { "RRA", 0, 4, cpu_unimplemented_instruction },
-    { "JR NZ, s8", 1, 2, cpu_unimplemented_instruction},          // 0x20
-    { "LD HL, d16", 2, 6, cpu_unimplemented_instruction },
+    { "JR NZ, s8", 1, 2, jr_nz_n },          // 0x20
+    { "LD HL, d16", 2, 6, ld_hl_nn },
     { "LD (HL+), A", 0, 4, cpu_unimplemented_instruction },
     { "INC HL", 0, 4, inc_hl },
     { "INC H", 0, 2, inc_h },
     { "DEC H", 0, 2, cpu_unimplemented_instruction },
-    { "LD H, d8", 1, 4, cpu_unimplemented_instruction },
+    { "LD H, d8", 1, 4, ld_h_n },
     { "DAA", 0, 2, cpu_unimplemented_instruction },
     { "JR Z, s8", 1, 0, cpu_unimplemented_instruction},
     { "ADD HL, HL", 0, 4, cpu_unimplemented_instruction },
@@ -56,7 +57,7 @@ const struct cpu_instruction cpu_instructions[256] = {
     { "DEC HL", 0, 4, cpu_unimplemented_instruction },
     { "INC L", 0, 2, inc_l },
     { "DEC L", 0, 2, cpu_unimplemented_instruction },
-    { "LD L, d8", 1, 4, cpu_unimplemented_instruction },
+    { "LD L, d8", 1, 4, ld_l_n },
     { "CPL", 0, 2, cpu_unimplemented_instruction },
     { "JR NC, s8", 1, 4, cpu_unimplemented_instruction},          // 0x30
     { "LD SP, d16", 2, 6, cpu_unimplemented_instruction },
@@ -72,8 +73,8 @@ const struct cpu_instruction cpu_instructions[256] = {
     { "DEC SP", 0, 4, cpu_unimplemented_instruction },
     { "INC A", 0, 2, inc_a },
     { "DEC A", 0, 2, cpu_unimplemented_instruction },
-    { "LD A, d8", 1, 4, cpu_unimplemented_instruction },
-    { "CCF", 0, 2, cpu_unimplemented_instruction },
+    { "LD A, d8", 1, 4, ld_a_n },
+    { "CCF", 0, 2, ccf },
     { "LD B, B", 0, 2, cpu_unimplemented_instruction },            // 0x40
     { "LD B, C", 0, 2, cpu_unimplemented_instruction },
     { "LD B, D", 0, 2, cpu_unimplemented_instruction },
@@ -105,7 +106,7 @@ const struct cpu_instruction cpu_instructions[256] = {
     { "LD E, H", 0, 2, cpu_unimplemented_instruction },
     { "LD E, L", 0, 2, cpu_unimplemented_instruction },
     { "LD E, (HL)", 0, 4, cpu_unimplemented_instruction },
-    { "LD E, A", 0, 2, cpu_unimplemented_instruction },
+    { "LD E, A", 0, 2, ld_e_a },
     { "LD H, B", 0, 2, cpu_unimplemented_instruction },              // 0x60
     { "LD H, C", 0, 2, cpu_unimplemented_instruction },
     { "LD H, D", 0, 2, cpu_unimplemented_instruction },
@@ -213,7 +214,7 @@ const struct cpu_instruction cpu_instructions[256] = {
     { "RET Z", 0, 0, cpu_unimplemented_instruction },
     { "RET", 0, 2, cpu_unimplemented_instruction },
     { "JP Z, a16", 2, 0, cpu_unimplemented_instruction },
-    { "NULL (0xCB) NYI", 0, 0, cpu_unimplemented_instruction },
+    { "0xCB Extended", 0, 0, cb_n },
     { "CALL Z, a16", 2, 0, cpu_unimplemented_instruction },
     { "CALL a16", 2, 6, call_nn },
     { "ADC A, d8", 1, 4, cpu_unimplemented_instruction },
@@ -250,7 +251,7 @@ const struct cpu_instruction cpu_instructions[256] = {
     { "NULL (0xED)", 0, 0, cpu_unimplemented_instruction },
     { "XOR d8", 1, 4, cpu_unimplemented_instruction },
     { "RST 5", 0, 8, cpu_unimplemented_instruction },
-    { "LD A, (a8)", 1, 6, cpu_unimplemented_instruction },              // 0xF0
+    { "LD A, (a8)", 1, 6, ld_ff_ap_n },              // 0xF0
     { "POP AF", 0, 6, cpu_unimplemented_instruction },
     { "LD A, (C)", 0, 4, cpu_unimplemented_instruction },
     { "DI", 0, 0, cpu_unimplemented_instruction },
@@ -268,264 +269,6 @@ const struct cpu_instruction cpu_instructions[256] = {
     { "RST 7", 0, 8, rst_7 }
 };
 
-const struct cpu_instruction cpu_prefix_cb_instructions[256] = {
-    { "RLC B", 0, 8, cpu_unimplemented_instruction },          // 0x00
-    { "RLC C", 0, 8, cpu_unimplemented_instruction },
-    { "RLC D", 0, 8, cpu_unimplemented_instruction },
-    { "RLC E", 0, 8, cpu_unimplemented_instruction },
-    { "RLC H", 0, 8, cpu_unimplemented_instruction },
-    { "RLC L", 0, 8, cpu_unimplemented_instruction },
-    { "RLC (HL)", 0, 16, cpu_unimplemented_instruction },
-    { "RLC A", 0, 8, cpu_unimplemented_instruction },
-    { "RRC B", 0, 8, cpu_unimplemented_instruction },
-    { "RRC C", 0, 8, cpu_unimplemented_instruction },
-    { "RRC D", 0, 8, cpu_unimplemented_instruction },
-    { "RRC E", 0, 8, cpu_unimplemented_instruction },
-    { "RRC H", 0, 8, cpu_unimplemented_instruction },
-    { "RRC L", 0, 8, cpu_unimplemented_instruction },
-    { "RRC (HL)", 0, 16, cpu_unimplemented_instruction },
-    { "RRC A", 0, 8, cpu_unimplemented_instruction },
-    { "RL B", 0, 8, cpu_unimplemented_instruction },           //0x10 
-    { "RL C", 0, 8, cpu_unimplemented_instruction },
-    { "RL D", 0, 8, cpu_unimplemented_instruction },
-    { "RL E", 0, 8, cpu_unimplemented_instruction },
-    { "RL H", 0, 8, cpu_unimplemented_instruction },
-    { "RL L", 0, 8, cpu_unimplemented_instruction },
-    { "RL (HL)", 0, 16, cpu_unimplemented_instruction },
-    { "RL A", 0, 8, cpu_unimplemented_instruction },
-    { "RR B", 0, 8, cpu_unimplemented_instruction },
-    { "RR C", 0, 8, cpu_unimplemented_instruction },
-    { "RR D", 0, 8, cpu_unimplemented_instruction },
-    { "RR E", 0, 8, cpu_unimplemented_instruction },
-    { "RR H", 0, 8, cpu_unimplemented_instruction },
-    { "RR L", 0, 8, cpu_unimplemented_instruction },
-    { "RR (HL)", 0, 16, cpu_unimplemented_instruction },
-    { "RR A", 0, 8, cpu_unimplemented_instruction },
-    { "SLA B", 0, 8, cpu_unimplemented_instruction },          // 0x20
-    { "SLA C", 0, 8, cpu_unimplemented_instruction },
-    { "SLA D", 0, 8, cpu_unimplemented_instruction },
-    { "SLA E", 0, 8, cpu_unimplemented_instruction },
-    { "SLA H", 0, 8, cpu_unimplemented_instruction },
-    { "SLA L", 0, 8, cpu_unimplemented_instruction },
-    { "SLA (HL)", 0, 16, cpu_unimplemented_instruction },
-    { "SLA A", 0, 8, cpu_unimplemented_instruction },
-    { "SRA B", 0, 8, cpu_unimplemented_instruction },
-    { "SRA C", 0, 8, cpu_unimplemented_instruction },
-    { "SRA D", 0, 8, cpu_unimplemented_instruction },
-    { "SRA E", 0, 8, cpu_unimplemented_instruction },
-    { "SRA H", 0, 8, cpu_unimplemented_instruction },
-    { "SRA L", 0, 8, cpu_unimplemented_instruction },
-    { "SRA (HL)", 0, 16, cpu_unimplemented_instruction },
-    { "SRA A", 0, 8, cpu_unimplemented_instruction },
-    { "SWAP B", 0, 8, cpu_unimplemented_instruction },          // 0x30
-    { "SWAP C", 0, 8, cpu_unimplemented_instruction },
-    { "SWAP D", 0, 8, cpu_unimplemented_instruction },
-    { "SWAP E", 0, 8, cpu_unimplemented_instruction },
-    { "SWAP H", 0, 8, cpu_unimplemented_instruction },
-    { "SWAP L", 0, 8, cpu_unimplemented_instruction },
-    { "SWAP (HL)", 0, 16, cpu_unimplemented_instruction },
-    { "SWAP A", 0, 8, cpu_unimplemented_instruction },
-    { "SRL B", 0, 8, cpu_unimplemented_instruction },
-    { "SRL C", 0, 8, cpu_unimplemented_instruction },
-    { "SRL D", 0, 8, cpu_unimplemented_instruction },
-    { "SRL E", 0, 8, cpu_unimplemented_instruction },
-    { "SRL H", 0, 8, cpu_unimplemented_instruction },
-    { "SRL L", 0, 8, cpu_unimplemented_instruction },
-    { "SRL (HL)", 0, 16, cpu_unimplemented_instruction },
-    { "SRL A", 0, 8, cpu_unimplemented_instruction },
-    { "BIT 0, B", 0, 8, cpu_unimplemented_instruction },           // 0x40
-    { "BIT 0, C", 0, 8, cpu_unimplemented_instruction },
-    { "BIT 0, D", 0, 8, cpu_unimplemented_instruction },
-    { "BIT 0, E", 0, 8, cpu_unimplemented_instruction },
-    { "BIT 0, H", 0, 8, cpu_unimplemented_instruction },
-    { "BIT 0, L", 0, 8, cpu_unimplemented_instruction },
-    { "BIT 0, (HL)", 0, 12, cpu_unimplemented_instruction },
-    { "BIT 0, A", 0, 8, cpu_unimplemented_instruction },
-    { "BIT 1, B", 0, 8, cpu_unimplemented_instruction },
-    { "BIT 1, C", 0, 8, cpu_unimplemented_instruction },
-    { "BIT 1, D", 0, 8, cpu_unimplemented_instruction },
-    { "BIT 1, E", 0, 8, cpu_unimplemented_instruction },
-    { "BIT 1, H", 0, 8, cpu_unimplemented_instruction },
-    { "BIT 1, L", 0, 8, cpu_unimplemented_instruction },
-    { "BIT 1, (HL)", 0, 12, cpu_unimplemented_instruction },
-    { "BIT 1, A", 0, 8, cpu_unimplemented_instruction },
-    { "BIT 2, B", 0, 8, cpu_unimplemented_instruction },           // 0x50
-    { "BIT 2, D", 0, 8, cpu_unimplemented_instruction },
-    { "BIT 2, D", 0, 8, cpu_unimplemented_instruction },
-    { "BIT 2, E", 0, 8, cpu_unimplemented_instruction },
-    { "BIT 2, H", 0, 8, cpu_unimplemented_instruction },
-    { "BIT 2, L", 0, 8, cpu_unimplemented_instruction },
-    { "BIT 2, (HL)", 0, 12, cpu_unimplemented_instruction },
-    { "BIT 2, A", 0, 8, cpu_unimplemented_instruction },
-    { "BIT 3, B", 0, 8, cpu_unimplemented_instruction },
-    { "BIT 3, C", 0, 8, cpu_unimplemented_instruction },
-    { "BIT 3, D", 0, 8, cpu_unimplemented_instruction },
-    { "BIT 3, E", 0, 8, cpu_unimplemented_instruction },
-    { "BIT 3, H", 0, 8, cpu_unimplemented_instruction },
-    { "BIT 3, L", 0, 8, cpu_unimplemented_instruction },
-    { "BIT 3, (HL)", 0, 12, cpu_unimplemented_instruction },
-    { "BIT 3, A", 0, 8, cpu_unimplemented_instruction },
-    { "BIT 4, B", 0, 8, cpu_unimplemented_instruction },            // 0x60
-    { "BIT 4, C", 0, 8, cpu_unimplemented_instruction },
-    { "BIT 4, D", 0, 8, cpu_unimplemented_instruction },
-    { "BIT 4, E", 0, 8, cpu_unimplemented_instruction },
-    { "BIT 4, H", 0, 8, cpu_unimplemented_instruction },
-    { "BIT 4, L", 0, 8, cpu_unimplemented_instruction },
-    { "BIT 4, (HL)", 0, 12, cpu_unimplemented_instruction },
-    { "BIT 4, A", 0, 8, cpu_unimplemented_instruction },
-    { "BIT 5, B", 0, 8, cpu_unimplemented_instruction },
-    { "BIT 5, C", 0, 8, cpu_unimplemented_instruction },
-    { "BIT 5, D", 0, 8, cpu_unimplemented_instruction },
-    { "BIT 5, E", 0, 8, cpu_unimplemented_instruction },
-    { "BIT 5, H", 0, 8, cpu_unimplemented_instruction },
-    { "BIT 5, L", 0, 8, cpu_unimplemented_instruction },
-    { "BIT 5, (HL)", 0, 12, cpu_unimplemented_instruction },
-    { "BIT 5, A", 0, 8, cpu_unimplemented_instruction },
-    { "BIT 6, B", 0, 8, cpu_unimplemented_instruction },           // 0x70
-    { "BIT 6, C", 0, 8, cpu_unimplemented_instruction },
-    { "BIT 6, D", 0, 8, cpu_unimplemented_instruction },
-    { "BIT 6, E", 0, 8, cpu_unimplemented_instruction },
-    { "BIT 6, H", 0, 8, cpu_unimplemented_instruction },
-    { "BIT 6, L", 0, 8, cpu_unimplemented_instruction },
-    { "BIT 6, (HL)", 0, 12, cpu_unimplemented_instruction },
-    { "BIT 6, A", 0, 8, cpu_unimplemented_instruction },
-    { "BIT 7, B", 0, 8, cpu_unimplemented_instruction },        
-    { "BIT 7, C", 0, 8, cpu_unimplemented_instruction },
-    { "BIT 7, D", 0, 8, cpu_unimplemented_instruction },
-    { "BIT 7, E", 0, 8, cpu_unimplemented_instruction },
-    { "BIT 7, H", 0, 8, cpu_unimplemented_instruction },
-    { "BIT 7, L", 0, 8, cpu_unimplemented_instruction },
-    { "BIT 7, (HL)", 0, 12, cpu_unimplemented_instruction },
-    { "BIT 7, A", 0, 8, cpu_unimplemented_instruction },
-    { "RES 0, B", 0, 8, cpu_unimplemented_instruction },           // 0x80
-    { "RES 0, C", 0, 8, cpu_unimplemented_instruction },
-    { "RES 0, D", 0, 8, cpu_unimplemented_instruction },
-    { "RES 0, E", 0, 8, cpu_unimplemented_instruction },
-    { "RES 0, H", 0, 8, cpu_unimplemented_instruction },
-    { "RES 0, L", 0, 8, cpu_unimplemented_instruction },
-    { "RES 0, (HL)", 0, 12, cpu_unimplemented_instruction },
-    { "RES 0, A", 0, 8, cpu_unimplemented_instruction },
-    { "RES 1, B", 0, 8, cpu_unimplemented_instruction },
-    { "RES 1, C", 0, 8, cpu_unimplemented_instruction },
-    { "RES 1, D", 0, 8, cpu_unimplemented_instruction },
-    { "RES 1, E", 0, 8, cpu_unimplemented_instruction },
-    { "RES 1, H", 0, 8, cpu_unimplemented_instruction },
-    { "RES 1, L", 0, 8, cpu_unimplemented_instruction },
-    { "RES 1, (HL)", 0, 12, cpu_unimplemented_instruction },
-    { "RES 1, A", 0, 8, cpu_unimplemented_instruction },
-    { "RES 2, B", 0, 8, cpu_unimplemented_instruction },           // 0x90
-    { "RES 2, C", 0, 8, cpu_unimplemented_instruction },
-    { "RES 2, D", 0, 8, cpu_unimplemented_instruction },
-    { "RES 2, E", 0, 8, cpu_unimplemented_instruction },
-    { "RES 2, H", 0, 8, cpu_unimplemented_instruction },
-    { "RES 2, L", 0, 8, cpu_unimplemented_instruction },
-    { "RES 2, (HL)", 0, 12, cpu_unimplemented_instruction },
-    { "RES 2, A", 0, 8, cpu_unimplemented_instruction },
-    { "RES 3, B", 0, 8, cpu_unimplemented_instruction },
-    { "RES 3, C", 0, 8, cpu_unimplemented_instruction },
-    { "RES 3, D", 0, 8, cpu_unimplemented_instruction },
-    { "RES 3, E", 0, 8, cpu_unimplemented_instruction },
-    { "RES 3, H", 0, 8, cpu_unimplemented_instruction },
-    { "RES 3, L", 0, 8, cpu_unimplemented_instruction },
-    { "RES 3, (HL)", 0, 12, cpu_unimplemented_instruction },
-    { "RES 3, A", 0, 8, cpu_unimplemented_instruction },
-    { "RES 4, B", 0, 8, cpu_unimplemented_instruction },           // 0xA0
-    { "RES 4, C", 0, 8, cpu_unimplemented_instruction },
-    { "RES 4, D", 0, 8, cpu_unimplemented_instruction },
-    { "RES 4, E", 0, 8, cpu_unimplemented_instruction },
-    { "RES 4, H", 0, 8, cpu_unimplemented_instruction },
-    { "RES 4, L", 0, 8, cpu_unimplemented_instruction },
-    { "RES 4, (HL)", 0, 12, cpu_unimplemented_instruction },
-    { "RES 4, A", 0, 8, cpu_unimplemented_instruction },
-    { "RES 5, B", 0, 8, cpu_unimplemented_instruction },
-    { "RES 5, C", 0, 8, cpu_unimplemented_instruction },
-    { "RES 5, D", 0, 8, cpu_unimplemented_instruction },
-    { "RES 5, E", 0, 8, cpu_unimplemented_instruction },
-    { "RES 5, H", 0, 8, cpu_unimplemented_instruction },
-    { "RES 5, L", 0, 8, cpu_unimplemented_instruction },
-    { "RES 5, (HL)", 0, 12, cpu_unimplemented_instruction },
-    { "RES 5, A", 0, 8, cpu_unimplemented_instruction },
-    { "RES 6, B", 0, 8, cpu_unimplemented_instruction },           // 0xB0
-    { "RES 6, C", 0, 8, cpu_unimplemented_instruction },
-    { "RES 6, D", 0, 8, cpu_unimplemented_instruction },
-    { "RES 6, E", 0, 8, cpu_unimplemented_instruction },
-    { "RES 6, H", 0, 8, cpu_unimplemented_instruction },
-    { "RES 6, L", 0, 8, cpu_unimplemented_instruction },
-    { "RES 6, (HL)", 0, 12, cpu_unimplemented_instruction },
-    { "RES 6, A", 0, 8, cpu_unimplemented_instruction },
-    { "RES 7, B", 0, 8, cpu_unimplemented_instruction },
-    { "RES 7, C", 0, 8, cpu_unimplemented_instruction },
-    { "RES 7, D", 0, 8, cpu_unimplemented_instruction },
-    { "RES 7, E", 0, 8, cpu_unimplemented_instruction },
-    { "RES 7, H", 0, 8, cpu_unimplemented_instruction },
-    { "RES 7, L", 0, 8, cpu_unimplemented_instruction },
-    { "RES 7, (HL)", 0, 12, cpu_unimplemented_instruction },
-    { "RES 7, A", 0, 8, cpu_unimplemented_instruction },
-    { "SET 0, B", 0, 8, cpu_unimplemented_instruction },           // 0xC0
-    { "SET 0, C", 0, 8, cpu_unimplemented_instruction },
-    { "SET 0, D", 0, 8, cpu_unimplemented_instruction },
-    { "SET 0, E", 0, 8, cpu_unimplemented_instruction },
-    { "SET 0, H", 0, 8, cpu_unimplemented_instruction },
-    { "SET 0, L", 0, 8, cpu_unimplemented_instruction },
-    { "SET 0, (HL)", 0, 12, cpu_unimplemented_instruction },
-    { "SET 0, A", 0, 8, cpu_unimplemented_instruction },
-    { "SET 1, B", 0, 8, cpu_unimplemented_instruction },         
-    { "SET 1, C", 0, 8, cpu_unimplemented_instruction },
-    { "SET 1, D", 0, 8, cpu_unimplemented_instruction },
-    { "SET 1, E", 0, 8, cpu_unimplemented_instruction },
-    { "SET 1, H", 0, 8, cpu_unimplemented_instruction },
-    { "SET 1, L", 0, 8, cpu_unimplemented_instruction },
-    { "SET 1, (HL)", 0, 12, cpu_unimplemented_instruction },
-    { "SET 1, A", 0, 8, cpu_unimplemented_instruction },
-    { "SET 2, B", 0, 8, cpu_unimplemented_instruction },           // 0xD0         
-    { "SET 2, C", 0, 8, cpu_unimplemented_instruction },
-    { "SET 2, D", 0, 8, cpu_unimplemented_instruction },
-    { "SET 2, E", 0, 8, cpu_unimplemented_instruction },
-    { "SET 2, H", 0, 8, cpu_unimplemented_instruction },
-    { "SET 2, L", 0, 8, cpu_unimplemented_instruction },
-    { "SET 2, (HL)", 0, 12, cpu_unimplemented_instruction },
-    { "SET 2, A", 0, 8, cpu_unimplemented_instruction },
-    { "SET 3, B", 0, 8, cpu_unimplemented_instruction },         
-    { "SET 3, C", 0, 8, cpu_unimplemented_instruction },
-    { "SET 3, D", 0, 8, cpu_unimplemented_instruction },
-    { "SET 3, E", 0, 8, cpu_unimplemented_instruction },
-    { "SET 3, H", 0, 8, cpu_unimplemented_instruction },
-    { "SET 3, L", 0, 8, cpu_unimplemented_instruction },
-    { "SET 3, (HL)", 0, 12, cpu_unimplemented_instruction },
-    { "SET 3, A", 0, 8, cpu_unimplemented_instruction },
-    { "SET 4, B", 0, 8, cpu_unimplemented_instruction },           // 0xE0         
-    { "SET 4, C", 0, 8, cpu_unimplemented_instruction },
-    { "SET 4, D", 0, 8, cpu_unimplemented_instruction },
-    { "SET 4, E", 0, 8, cpu_unimplemented_instruction },
-    { "SET 4, H", 0, 8, cpu_unimplemented_instruction },
-    { "SET 4, L", 0, 8, cpu_unimplemented_instruction },
-    { "SET 4, (HL)", 0, 12, cpu_unimplemented_instruction },
-    { "SET 4, A", 0, 8, cpu_unimplemented_instruction },
-    { "SET 5, B", 0, 8, cpu_unimplemented_instruction },         
-    { "SET 5, C", 0, 8, cpu_unimplemented_instruction },
-    { "SET 5, D", 0, 8, cpu_unimplemented_instruction },
-    { "SET 5, E", 0, 8, cpu_unimplemented_instruction },
-    { "SET 5, H", 0, 8, cpu_unimplemented_instruction },
-    { "SET 5, L", 0, 8, cpu_unimplemented_instruction },
-    { "SET 5, (HL)", 0, 12, cpu_unimplemented_instruction },
-    { "SET 5, A", 0, 8, cpu_unimplemented_instruction },
-    { "SET 6, B", 0, 8, cpu_unimplemented_instruction },           // 0xF0
-    { "SET 6, C", 0, 8, cpu_unimplemented_instruction },
-    { "SET 6, D", 0, 8, cpu_unimplemented_instruction },
-    { "SET 6, E", 0, 8, cpu_unimplemented_instruction },
-    { "SET 6, H", 0, 8, cpu_unimplemented_instruction },
-    { "SET 6, L", 0, 8, cpu_unimplemented_instruction },
-    { "SET 6, (HL)", 0, 12, cpu_unimplemented_instruction },
-    { "SET 6, A", 0, 8, cpu_unimplemented_instruction },
-    { "SET 7, B", 0, 8, cpu_unimplemented_instruction },         
-    { "SET 7, C", 0, 8, cpu_unimplemented_instruction },
-    { "SET 7, D", 0, 8, cpu_unimplemented_instruction },
-    { "SET 7, E", 0, 8, cpu_unimplemented_instruction },
-    { "SET 7, H", 0, 8, cpu_unimplemented_instruction },
-    { "SET 7, L", 0, 8, cpu_unimplemented_instruction },
-    { "SET 7, (HL)", 0, 12, cpu_unimplemented_instruction },
-    { "SET 7, A", 0, 8, cpu_unimplemented_instruction },
-};
 
 void cpu_reset() {
     memset(mmu.sram, 0, sizeof(mmu.sram));
@@ -814,9 +557,9 @@ static void cp(unsigned char value) {
 }
 
 // 0x00
-void cpu_nop() { } //NOP
+void nop() { } //NOP
 // 0x01
-void cpu_ld_bc_nn(unsigned short operand) { registers.bc = operand; }
+
 
 //0xc3
 void jp_nn(unsigned short operand) { registers.pc = operand; }
@@ -839,8 +582,44 @@ void inc_hl() { registers.hl++; }
 
 void inc_sp() { registers.sp++; }
 
+void dec_b() { registers.b = dec(registers.b); }
+
 void ld_bcp_a() { mmu_write_byte(registers.bc, registers.a); }
+
+void ld_e_a() { registers.e = registers.a; }
+
+void ld_a_n(unsigned char operand) { registers.a = operand; }
+void ld_b_n(unsigned char operand) { registers.b = operand; }
+void ld_c_n(unsigned char operand) { registers.c = operand; }
+void ld_d_n(unsigned char operand) { registers.d = operand; }
+void ld_e_n(unsigned char operand) { registers.e = operand; }
+void ld_h_n(unsigned char operand) { registers.h = operand; }
+void ld_l_n(unsigned char operand) { registers.l = operand; }
+
+void ld_bc_nn(unsigned short operand) { registers.bc = operand; }
+void ld_de_nn(unsigned short operand) { registers.de = operand; }
+void ld_hl_nn(unsigned short operand) { registers.hl = operand; }
+
+// 0xf0
+void ld_ff_ap_n(unsigned char operand) { registers.a = mmu_read_byte(0xff00 + operand); }
 
 void call_nn(unsigned short operand) { mmu_write_short_to_stack(registers.pc); registers.pc = operand; }
 
+void add_hl_de() { add2(&registers.hl, registers.de); }
+
 void sub_n(unsigned char operand) { sub(operand); }
+
+void ccf() {
+	if(FLAGS_ISCARRY) FLAGS_CLEAR(FLAGS_CARRY);
+	else FLAGS_SET(FLAGS_CARRY);
+	
+	FLAGS_CLEAR(FLAGS_NEGATIVE | FLAGS_HALFCARRY);
+}
+
+void jr_nz_n(unsigned char operand) {
+	if(FLAGS_ISZERO) cpu.ticks += 8;
+	else {
+		registers.pc += (signed char)operand;	
+		cpu.ticks += 12;
+	}
+}
