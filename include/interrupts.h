@@ -1,4 +1,5 @@
 #pragma once
+#include "platform.h"
 
 #define INTERRUPTS_VBLANK       (1 << 0)
 #define INTERRUPTS_LCDSTAT      (1 << 1)

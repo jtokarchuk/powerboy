@@ -1,4 +1,5 @@
 #pragma once
+#include "platform.h"
 
 #define GPU_CONTROL_BGENABLE (1 << 0)
 #define GPU_CONTROL_SPRITEENABLE (1 << 1)

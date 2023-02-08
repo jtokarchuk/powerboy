@@ -7,6 +7,7 @@
 #include "mmu.h"
 #include "interrupts.h"
 #include "cb.h"
+#include "keys.h"
 
 struct cpu cpu;
 
@@ -265,7 +266,7 @@ const struct cpu_instruction cpu_instructions[256] = {
     { "EI", 0, 2, cpu_unimplemented_instruction },
     { "NULL (0xFC)", 0, 0, cpu_unimplemented_instruction },
     { "NULL (0xFD)", 0, 0, cpu_unimplemented_instruction },
-    { "CP d8", 1, 4, cpu_unimplemented_instruction },
+    { "CP d8", 1, 4, cp_n },
     { "RST 7", 0, 8, rst_7 }
 };
 
@@ -318,6 +319,15 @@ void cpu_reset() {
 	gpu.scanline = 0;
 	gpu.tick = 0;
 
+    keys.a = 1;
+	keys.b = 1;
+	keys.select = 1;
+	keys.start = 1;
+	keys.right = 1;
+	keys.left = 1;
+	keys.up = 1;
+	keys.down = 1;
+
     memset(gpu_tiles, 0, sizeof(gpu_tiles));
 	memset(display_framebuffer, 255, sizeof(display_framebuffer));
 
@@ -367,6 +377,10 @@ void cpu_emulate() {
 
         if(cpu_instructions[instruction].length == 1) operand = (unsigned short)mmu_read_byte(registers.pc);
         if(cpu_instructions[instruction].length == 2) operand = mmu_read_short(registers.pc); 
+
+        //if (cpu_instructions[instruction].function != cpu_unimplemented_instruction) {
+        //    printf("[Address]: 0x%04x\t[Operand]: 0x%04x\t[Opcode]: 0x%02x: %s\n", registers.pc - 1,  operand, instruction, cpu_instructions[instruction].mnemonic);
+        //}
 
         registers.pc += cpu_instructions[instruction].length;
         
@@ -711,3 +725,16 @@ void ret_nc() {
 }
 
 void di_inst() { interrupt.master = 0; }
+
+void cp_n(unsigned char operand) {
+	FLAGS_SET(FLAGS_NEGATIVE);
+	
+	if(registers.a == operand) FLAGS_SET(FLAGS_ZERO);
+	else FLAGS_CLEAR(FLAGS_ZERO);
+	
+	if(operand > registers.a) FLAGS_SET(FLAGS_CARRY);
+	else FLAGS_CLEAR(FLAGS_CARRY);
+	
+	if((operand & 0x0f) > (registers.a & 0x0f)) FLAGS_SET(FLAGS_HALFCARRY);
+	else FLAGS_CLEAR(FLAGS_HALFCARRY);
+}

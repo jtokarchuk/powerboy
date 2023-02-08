@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include "platform.h"
 
 extern const unsigned char mmu_io_reset[0x100];
 

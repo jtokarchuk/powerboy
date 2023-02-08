@@ -1,4 +1,5 @@
 #pragma once
+#include "platform.h"
 
 #define ROM_OFFSET_NAME 0x134
 #define ROM_OFFSET_TYPE 0x147

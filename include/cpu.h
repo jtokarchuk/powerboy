@@ -3,6 +3,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "platform.h"
+
 #define FLAGS_ZERO (1 << 7)
 #define FLAGS_NEGATIVE (1 << 6)
 #define FLAGS_HALFCARRY (1 << 5)
@@ -161,3 +163,5 @@ void xor_h();
 void xor_l();
 
 void di_inst();
+
+void cp_n(unsigned char operand);

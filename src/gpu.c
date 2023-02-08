@@ -120,6 +120,7 @@ void gpu_emulate(void) {
 		case GPU_MODE_VRAM:
 			if(gpu.tick >= 172) {
 				gpuMode = GPU_MODE_HBLANK;
+				printf("gpu tick hblank");
 				display_render_scanline();
 				gpu.tick -= 172;
 			}

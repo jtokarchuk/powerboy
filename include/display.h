@@ -1,4 +1,5 @@
 #pragma once
+#include "platform.h"
 
 struct rgb {
     unsigned char r;
