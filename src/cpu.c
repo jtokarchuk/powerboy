@@ -24,7 +24,7 @@ const struct cpu_instruction cpu_instructions[256] = {
     { "LD A, (BC)", 0, 4, cpu_unimplemented_instruction },
     { "DEC BC", 0, 4, cpu_unimplemented_instruction },
     { "INC C", 0, 2, inc_c },
-    { "DEC C", 0, 2, cpu_unimplemented_instruction },
+    { "DEC C", 0, 2, dec_c },
     { "LD C, d8", 1, 2, ld_c_n },
     { "RRCA", 0, 4, cpu_unimplemented_instruction },                         
     { "STOP", 1, 2, cpu_unimplemented_instruction },               // 0x10
@@ -32,7 +32,7 @@ const struct cpu_instruction cpu_instructions[256] = {
     { "LD (DE), A", 0, 4, cpu_unimplemented_instruction },
     { "INC DE", 0, 4, inc_de },
     { "INC D", 0, 2, inc_d },
-    { "DEC D", 0, 2, cpu_unimplemented_instruction },
+    { "DEC D", 0, 2, dec_d },
     { "LD D, d8", 1, 4, ld_d_n },
     { "RLA", 0, 4, cpu_unimplemented_instruction },
     { "JR s8", 1, 10, cpu_unimplemented_instruction },
@@ -40,7 +40,7 @@ const struct cpu_instruction cpu_instructions[256] = {
     { "LD A, (DE)", 0, 4, cpu_unimplemented_instruction },
     { "DEC DE", 0, 4, cpu_unimplemented_instruction },
     { "INC E", 0, 2, inc_e },
-    { "DEC E", 0, 2, cpu_unimplemented_instruction },
+    { "DEC E", 0, 2, dec_e },
     { "LD E, d8", 1, 4, ld_d_n },
     { "RRA", 0, 4, cpu_unimplemented_instruction },
     { "JR NZ, s8", 1, 2, jr_nz_n },          // 0x20
@@ -48,7 +48,7 @@ const struct cpu_instruction cpu_instructions[256] = {
     { "LD (HL+), A", 0, 4, cpu_unimplemented_instruction },
     { "INC HL", 0, 4, inc_hl },
     { "INC H", 0, 2, inc_h },
-    { "DEC H", 0, 2, cpu_unimplemented_instruction },
+    { "DEC H", 0, 2, dec_h },
     { "LD H, d8", 1, 4, ld_h_n },
     { "DAA", 0, 2, cpu_unimplemented_instruction },
     { "JR Z, s8", 1, 0, cpu_unimplemented_instruction},
@@ -56,12 +56,12 @@ const struct cpu_instruction cpu_instructions[256] = {
     { "LD A, (HL+)", 0, 4, cpu_unimplemented_instruction },
     { "DEC HL", 0, 4, cpu_unimplemented_instruction },
     { "INC L", 0, 2, inc_l },
-    { "DEC L", 0, 2, cpu_unimplemented_instruction },
+    { "DEC L", 0, 2, dec_l },
     { "LD L, d8", 1, 4, ld_l_n },
     { "CPL", 0, 2, cpu_unimplemented_instruction },
     { "JR NC, s8", 1, 4, cpu_unimplemented_instruction},          // 0x30
     { "LD SP, d16", 2, 6, cpu_unimplemented_instruction },
-    { "LD (HL-), A", 0, 4, cpu_unimplemented_instruction },
+    { "LD (HL-), A", 0, 4, ldd_hlp_a },
     { "INC SP", 0, 4, inc_sp },
     { "INC (HL)", 0, 6, cpu_unimplemented_instruction },
     { "DEC (HL)", 0, 6, cpu_unimplemented_instruction},
@@ -72,57 +72,57 @@ const struct cpu_instruction cpu_instructions[256] = {
     { "LD A, (HL-)", 0, 4, cpu_unimplemented_instruction },
     { "DEC SP", 0, 4, cpu_unimplemented_instruction },
     { "INC A", 0, 2, inc_a },
-    { "DEC A", 0, 2, cpu_unimplemented_instruction },
+    { "DEC A", 0, 2, dec_a },
     { "LD A, d8", 1, 4, ld_a_n },
     { "CCF", 0, 2, ccf },
-    { "LD B, B", 0, 2, cpu_unimplemented_instruction },            // 0x40
-    { "LD B, C", 0, 2, cpu_unimplemented_instruction },
-    { "LD B, D", 0, 2, cpu_unimplemented_instruction },
-    { "LD B, E", 0, 2, cpu_unimplemented_instruction },
-    { "LD B, H", 0, 2, cpu_unimplemented_instruction },
-    { "LD B, L", 0, 2, cpu_unimplemented_instruction },
+    { "LD B, B", 0, 2, nop },            // 0x40
+    { "LD B, C", 0, 2, ld_b_c },
+    { "LD B, D", 0, 2, ld_b_d },
+    { "LD B, E", 0, 2, ld_b_e },
+    { "LD B, H", 0, 2, ld_b_h },
+    { "LD B, L", 0, 2, ld_b_l },
     { "LD B, (HL)", 0, 4, cpu_unimplemented_instruction },
-    { "LD B, A", 0, 2, cpu_unimplemented_instruction },
-    { "LD C, B", 0, 2, cpu_unimplemented_instruction },
-    { "LD C, C", 0, 2, cpu_unimplemented_instruction },
-    { "LD C, D", 0, 2, cpu_unimplemented_instruction },
-    { "LD C, E", 0, 2, cpu_unimplemented_instruction },
-    { "LD C, H", 0, 2, cpu_unimplemented_instruction },
-    { "LD C, L", 0, 2, cpu_unimplemented_instruction },
+    { "LD B, A", 0, 2, ld_b_a },
+    { "LD C, B", 0, 2, ld_c_b },
+    { "LD C, C", 0, 2, nop },
+    { "LD C, D", 0, 2, ld_c_d },
+    { "LD C, E", 0, 2, ld_c_e },
+    { "LD C, H", 0, 2, ld_c_h },
+    { "LD C, L", 0, 2, ld_c_l },
     { "LD C, (HL)", 0, 4, cpu_unimplemented_instruction },
-    { "LD C, A", 0, 2, cpu_unimplemented_instruction },
-    { "LD D, B", 0, 2, cpu_unimplemented_instruction },             // 0x50
-    { "LD D, C", 0, 2, cpu_unimplemented_instruction },
-    { "LD D, D", 0, 2, cpu_unimplemented_instruction },
-    { "LD D, E", 0, 2, cpu_unimplemented_instruction },
-    { "LD D, H", 0, 2, cpu_unimplemented_instruction },
-    { "LD D, L", 0, 2, cpu_unimplemented_instruction },
+    { "LD C, A", 0, 2, ld_c_a },
+    { "LD D, B", 0, 2, ld_d_b },             // 0x50
+    { "LD D, C", 0, 2, ld_d_c },
+    { "LD D, D", 0, 2, nop },
+    { "LD D, E", 0, 2, ld_d_e },
+    { "LD D, H", 0, 2, ld_d_h },
+    { "LD D, L", 0, 2, ld_d_l },
     { "LD D, (HL)", 0, 4, cpu_unimplemented_instruction },
-    { "LD D, A", 0, 2, cpu_unimplemented_instruction },
-    { "LD E, B", 0, 2, cpu_unimplemented_instruction },
-    { "LD E, C", 0, 2, cpu_unimplemented_instruction },
-    { "LD E, D", 0, 2, cpu_unimplemented_instruction },
-    { "LD E, E", 0, 2, cpu_unimplemented_instruction },
-    { "LD E, H", 0, 2, cpu_unimplemented_instruction },
-    { "LD E, L", 0, 2, cpu_unimplemented_instruction },
+    { "LD D, A", 0, 2, ld_d_a },
+    { "LD E, B", 0, 2, ld_e_b },
+    { "LD E, C", 0, 2, ld_e_c },
+    { "LD E, D", 0, 2, ld_e_d },
+    { "LD E, E", 0, 2, nop },
+    { "LD E, H", 0, 2, ld_e_h },
+    { "LD E, L", 0, 2, ld_e_l },
     { "LD E, (HL)", 0, 4, cpu_unimplemented_instruction },
     { "LD E, A", 0, 2, ld_e_a },
-    { "LD H, B", 0, 2, cpu_unimplemented_instruction },              // 0x60
-    { "LD H, C", 0, 2, cpu_unimplemented_instruction },
-    { "LD H, D", 0, 2, cpu_unimplemented_instruction },
-    { "LD H, E", 0, 2, cpu_unimplemented_instruction },
-    { "LD H, H", 0, 2, cpu_unimplemented_instruction },
-    { "LD H, L", 0, 2, cpu_unimplemented_instruction },
+    { "LD H, B", 0, 2, ld_h_b },              // 0x60
+    { "LD H, C", 0, 2, ld_h_c },
+    { "LD H, D", 0, 2, ld_h_d },
+    { "LD H, E", 0, 2, ld_h_e },
+    { "LD H, H", 0, 2, nop },
+    { "LD H, L", 0, 2, ld_h_l },
     { "LD H, (HL)", 0, 4, cpu_unimplemented_instruction },
-    { "LD H, A", 0, 2, cpu_unimplemented_instruction },
-    { "LD L, B", 0, 2, cpu_unimplemented_instruction },
-    { "LD L, C", 0, 2, cpu_unimplemented_instruction },
-    { "LD L, D", 0, 2, cpu_unimplemented_instruction },
-    { "LD L, E", 0, 2, cpu_unimplemented_instruction },
-    { "LD L, H", 0, 2, cpu_unimplemented_instruction },
-    { "LD L, L", 0, 2, cpu_unimplemented_instruction },
+    { "LD H, A", 0, 2, ld_h_a },
+    { "LD L, B", 0, 2, ld_l_b },
+    { "LD L, C", 0, 2, ld_l_c },
+    { "LD L, D", 0, 2, ld_l_d },
+    { "LD L, E", 0, 2, ld_l_e },
+    { "LD L, H", 0, 2, ld_l_h },
+    { "LD L, L", 0, 2, nop },
     { "LD L, (HL)", 0, 4, cpu_unimplemented_instruction },
-    { "LD L, A", 0, 2, cpu_unimplemented_instruction },
+    { "LD L, A", 0, 2, ld_l_a },
     { "LD (HL), B", 0, 4, cpu_unimplemented_instruction },            // 0x70
     { "LD (HL), C", 0, 4, cpu_unimplemented_instruction },
     { "LD (HL), D", 0, 4, cpu_unimplemented_instruction },
@@ -131,14 +131,14 @@ const struct cpu_instruction cpu_instructions[256] = {
     { "LD (HL), L", 0, 4, cpu_unimplemented_instruction },
     { "HALT", 0, 2, cpu_unimplemented_instruction },
     { "LD (HL), A", 0, 4, cpu_unimplemented_instruction },
-    { "LD A, B", 0, 2, cpu_unimplemented_instruction },
-    { "LD A, C", 0, 2, cpu_unimplemented_instruction },
-    { "LD A, D", 0, 2, cpu_unimplemented_instruction },
-    { "LD A, E", 0, 2, cpu_unimplemented_instruction },
-    { "LD A, H", 0, 2, cpu_unimplemented_instruction },
-    { "LD A, L", 0, 2, cpu_unimplemented_instruction },
+    { "LD A, B", 0, 2, ld_a_b },
+    { "LD A, C", 0, 2, ld_a_c },
+    { "LD A, D", 0, 2, ld_a_d },
+    { "LD A, E", 0, 2, ld_a_e },
+    { "LD A, H", 0, 2, ld_a_h },
+    { "LD A, L", 0, 2, ld_a_l },
     { "LD A, (HL)", 0, 4, cpu_unimplemented_instruction },
-    { "LD A, A", 0, 2, cpu_unimplemented_instruction },
+    { "LD A, A", 0, 2, nop },
     { "ADD A, B", 0, 2, cpu_unimplemented_instruction },               // 0x80
     { "ADD A, C", 0, 2, cpu_unimplemented_instruction },
     { "ADD A, D", 0, 2, cpu_unimplemented_instruction },
@@ -179,14 +179,14 @@ const struct cpu_instruction cpu_instructions[256] = {
     { "AND L", 0, 2, cpu_unimplemented_instruction },
     { "AND (HL)", 0, 4, cpu_unimplemented_instruction },
     { "AND A", 0, 2, cpu_unimplemented_instruction },
-    { "XOR B", 0, 2, cpu_unimplemented_instruction },
-    { "XOR C", 0, 2, cpu_unimplemented_instruction },
-    { "XOR D", 0, 2, cpu_unimplemented_instruction },
-    { "XOR E", 0, 2, cpu_unimplemented_instruction },
-    { "XOR H", 0, 2, cpu_unimplemented_instruction },
-    { "XOR L", 0, 2, cpu_unimplemented_instruction },
+    { "XOR B", 0, 2, xor_b },
+    { "XOR C", 0, 2, xor_c },
+    { "XOR D", 0, 2, xor_d },
+    { "XOR E", 0, 2, xor_e },
+    { "XOR H", 0, 2, xor_h },
+    { "XOR L", 0, 2, xor_l },
     { "XOR (HL)", 0, 4, cpu_unimplemented_instruction },
-    { "XOR A", 0, 2, cpu_unimplemented_instruction },
+    { "XOR A", 0, 2, xor_a },
     { "OR B", 0, 2, cpu_unimplemented_instruction },                    // 0xB0
     { "OR C", 0, 2, cpu_unimplemented_instruction },
     { "OR D", 0, 2, cpu_unimplemented_instruction },
@@ -203,7 +203,7 @@ const struct cpu_instruction cpu_instructions[256] = {
     { "CP L", 0, 2, cpu_unimplemented_instruction },
     { "CP (HL)", 0, 4, cpu_unimplemented_instruction },
     { "CP A", 0, 2, cpu_unimplemented_instruction },
-    { "RET NZ", 0, 0, cpu_unimplemented_instruction },                 // 0xC0
+    { "RET NZ", 0, 0, ret_nz },                 // 0xC0
     { "POP BC", 0, 6, cpu_unimplemented_instruction },
     { "JP NZ, a16", 2, 0, cpu_unimplemented_instruction },
     { "JP 0x%04X", 2, 6, jp_nn },
@@ -212,14 +212,14 @@ const struct cpu_instruction cpu_instructions[256] = {
     { "ADD A, d8", 1, 4, cpu_unimplemented_instruction },
     { "RST 0", 0, 8, cpu_unimplemented_instruction },
     { "RET Z", 0, 0, cpu_unimplemented_instruction },
-    { "RET", 0, 2, cpu_unimplemented_instruction },
+    { "RET", 0, 2, ret },
     { "JP Z, a16", 2, 0, cpu_unimplemented_instruction },
     { "0xCB Extended", 0, 0, cb_n },
     { "CALL Z, a16", 2, 0, cpu_unimplemented_instruction },
     { "CALL a16", 2, 6, call_nn },
     { "ADC A, d8", 1, 4, cpu_unimplemented_instruction },
     { "RST 1", 0, 8, rst_1 },
-    { "RET NC", 0, 0, cpu_unimplemented_instruction },                 // 0xD0
+    { "RET NC", 0, 0, ret_nc },                 // 0xD0
     { "POP DE", 0, 6, cpu_unimplemented_instruction },
     { "JP NC, a16", 2, 0, cpu_unimplemented_instruction },
     { "NULL (0xD3)", 0, 0, cpu_unimplemented_instruction },
@@ -227,7 +227,7 @@ const struct cpu_instruction cpu_instructions[256] = {
     { "PUSH DE", 0, 8, cpu_unimplemented_instruction },
     { "SUB d8", 1, 4, sub_n },
     { "RST 2", 0, 8, cpu_unimplemented_instruction },
-    { "RET C", 0, 0, cpu_unimplemented_instruction },
+    { "RET C", 0, 0, ret_c },
     { "RETI", 0, 8, cpu_unimplemented_instruction },
     { "JP C, a16", 2, 0, cpu_unimplemented_instruction },
     { "NULL (0xDB)", 0, 0, cpu_unimplemented_instruction },
@@ -235,7 +235,7 @@ const struct cpu_instruction cpu_instructions[256] = {
     { "NULL (0xDD)", 0, 0, cpu_unimplemented_instruction },
     { "SBC A, d8", 1, 4, cpu_unimplemented_instruction },
     { "RST 3", 0, 8, cpu_unimplemented_instruction },
-    { "LD (a8), A", 1, 6, cpu_unimplemented_instruction },             // 0xE0
+    { "LD (a8), A", 1, 6, ld_ff_n_ap },             // 0xE0
     { "POP HL", 0, 6, cpu_unimplemented_instruction },
     { "LD (C), A", 0, 4, cpu_unimplemented_instruction },
     { "NULL (0xE3)", 0, 0, cpu_unimplemented_instruction },
@@ -254,7 +254,7 @@ const struct cpu_instruction cpu_instructions[256] = {
     { "LD A, (a8)", 1, 6, ld_ff_ap_n },              // 0xF0
     { "POP AF", 0, 6, cpu_unimplemented_instruction },
     { "LD A, (C)", 0, 4, cpu_unimplemented_instruction },
-    { "DI", 0, 0, cpu_unimplemented_instruction },
+    { "DI", 0, 0, di_inst },
     { "NULL (0xF4)", 0, 0, cpu_unimplemented_instruction },
     { "PUSH AF", 0, 8, cpu_unimplemented_instruction },
     { "OR d8", 1, 4, cpu_unimplemented_instruction },
@@ -357,7 +357,7 @@ void cpu_reset() {
 
 void cpu_emulate() {
     unsigned char instruction;
-    cpu.operand = 0;
+    unsigned short operand = 0;
     
     const int MAXCYCLES = 69905; // the maximum amount of cpu cycles per frame
     cpu.ticks = 0;
@@ -365,14 +365,14 @@ void cpu_emulate() {
         instruction = mmu_read_byte(registers.pc++);
         cpu.last_instruction = instruction;
 
-        if(cpu_instructions[instruction].length == 1) cpu.operand = (unsigned short)mmu_read_byte(registers.pc);
-        if(cpu_instructions[instruction].length == 2) cpu.operand = mmu_read_short(registers.pc);
-        
-        // TODO: add functions to all instruction tables
-        // TODO: declare all functions in header for 
+        if(cpu_instructions[instruction].length == 1) operand = (unsigned short)mmu_read_byte(registers.pc);
+        if(cpu_instructions[instruction].length == 2) operand = mmu_read_short(registers.pc); 
+
         if (cpu_instructions[instruction].function != cpu_unimplemented_instruction) {
-            printf("Executing Instruction: 0x%02x: %s, Operand: 0x%04x\n", instruction, cpu_instructions[instruction].mnemonic, cpu.operand);
+            printf("[Address]: 0x%04x\t[Operand]: 0x%04x\t[Opcode]: 0x%02x: %s\n", registers.pc - 1,  operand, instruction, cpu_instructions[instruction].mnemonic);
         }
+
+        registers.pc += cpu_instructions[instruction].length;
         
         switch(cpu_instructions[instruction].length) {
             case 0:
@@ -380,21 +380,21 @@ void cpu_emulate() {
                 break;
             
             case 1:
-                ((void (*)(unsigned char))cpu_instructions[instruction].function)((unsigned char)cpu.operand);
+                ((void (*)(unsigned char))cpu_instructions[instruction].function)((unsigned char)operand);
                 break;
             
             case 2:
-                ((void (*)(unsigned short))cpu_instructions[instruction].function)(cpu.operand);
+                ((void (*)(unsigned short))cpu_instructions[instruction].function)(operand);
                 break;
         }
         
-        registers.pc += cpu_instructions[instruction].length;
+        
         cpu.ticks += cpu_instructions[instruction].cycles;
     }
 }
 
 void cpu_unimplemented_instruction() {
-    registers.sp--;
+    registers.pc--;
     char mnemonic[20];
     
     strcpy(mnemonic, cpu_instructions[cpu.last_instruction].mnemonic);
@@ -582,11 +582,17 @@ void inc_hl() { registers.hl++; }
 
 void inc_sp() { registers.sp++; }
 
+void dec_a() { registers.a = dec(registers.a); }
 void dec_b() { registers.b = dec(registers.b); }
+void dec_c() { registers.c = dec(registers.c); }
+void dec_d() { registers.d = dec(registers.d); }
+void dec_e() { registers.e = dec(registers.e); }
+void dec_h() { registers.h = dec(registers.h); }
+void dec_l() { registers.l = dec(registers.l); }
+
+void ldd_hlp_a() { mmu_write_byte(registers.hl, registers.a); registers.hl--; }
 
 void ld_bcp_a() { mmu_write_byte(registers.bc, registers.a); }
-
-void ld_e_a() { registers.e = registers.a; }
 
 void ld_a_n(unsigned char operand) { registers.a = operand; }
 void ld_b_n(unsigned char operand) { registers.b = operand; }
@@ -600,8 +606,66 @@ void ld_bc_nn(unsigned short operand) { registers.bc = operand; }
 void ld_de_nn(unsigned short operand) { registers.de = operand; }
 void ld_hl_nn(unsigned short operand) { registers.hl = operand; }
 
+void ld_a_b() { registers.a = registers.b; }
+void ld_a_c() { registers.a = registers.c; }
+void ld_a_d() { registers.a = registers.d; }
+void ld_a_e() { registers.a = registers.e; }
+void ld_a_h() { registers.a = registers.h; }
+void ld_a_l() { registers.a = registers.l; }
+
+void ld_b_a() { registers.b = registers.a; }
+void ld_b_c() { registers.b = registers.c; }
+void ld_b_d() { registers.b = registers.d; }
+void ld_b_e() { registers.b = registers.e; }
+void ld_b_h() { registers.b = registers.h; }
+void ld_b_l() { registers.b = registers.l; }
+
+void ld_c_a() { registers.c = registers.a; }
+void ld_c_b() { registers.c = registers.b; }
+void ld_c_d() { registers.c = registers.d; }
+void ld_c_e() { registers.c = registers.e; }
+void ld_c_h() { registers.c = registers.h; }
+void ld_c_l() { registers.c = registers.l; }
+
+void ld_d_a() { registers.d = registers.a; }
+void ld_d_b() { registers.d = registers.b; }
+void ld_d_c() { registers.d = registers.c; }
+void ld_d_e() { registers.d = registers.e; }
+void ld_d_h() { registers.d = registers.h; }
+void ld_d_l() { registers.d = registers.l; }
+
+void ld_e_a() { registers.e = registers.a; }
+void ld_e_b() { registers.e = registers.b; }
+void ld_e_c() { registers.e = registers.c; }
+void ld_e_d() { registers.e = registers.d; }
+void ld_e_h() { registers.e = registers.h; }
+void ld_e_l() { registers.e = registers.l; }
+
+void ld_h_a() { registers.h = registers.a; }
+void ld_h_b() { registers.h = registers.b; }
+void ld_h_c() { registers.h = registers.c; }
+void ld_h_d() { registers.h = registers.d; }
+void ld_h_e() { registers.h = registers.e; }
+void ld_h_l() { registers.h = registers.l; }
+
+void ld_l_a() { registers.l = registers.a; }
+void ld_l_b() { registers.l = registers.b; }
+void ld_l_c() { registers.l = registers.c; }
+void ld_l_d() { registers.l = registers.d; }
+void ld_l_e() { registers.l = registers.e; }
+void ld_l_h() { registers.l = registers.h; }
+
+void xor_a() { xor(registers.a); }
+void xor_b() { xor(registers.b); }
+void xor_c() { xor(registers.c); }
+void xor_d() { xor(registers.d); }
+void xor_e() { xor(registers.e); }
+void xor_h() { xor(registers.h); }
+void xor_l() { xor(registers.l); }
+
 // 0xf0
 void ld_ff_ap_n(unsigned char operand) { registers.a = mmu_read_byte(0xff00 + operand); }
+void ld_ff_n_ap(unsigned char operand) { mmu_write_byte(0xff00 + operand, registers.a); }
 
 void call_nn(unsigned short operand) { mmu_write_short_to_stack(registers.pc); registers.pc = operand; }
 
@@ -623,3 +687,31 @@ void jr_nz_n(unsigned char operand) {
 		cpu.ticks += 12;
 	}
 }
+
+void ret() { registers.pc = mmu_read_short_from_stack(); }
+
+void ret_nz() {
+	if(FLAGS_ISZERO) cpu.ticks += 8;
+	else {
+		registers.pc = mmu_read_short_from_stack();
+		cpu.ticks += 20;
+	}
+}
+
+void ret_c() {
+	if(FLAGS_ISCARRY) {
+		registers.pc = mmu_read_short_from_stack();
+		cpu.ticks += 20;
+	}
+	else cpu.ticks += 8;
+}
+
+void ret_nc() {
+	if(FLAGS_ISCARRY) cpu.ticks += 8;
+	else {
+		registers.pc = mmu_read_short_from_stack();
+		cpu.ticks += 20;
+	}
+}
+
+void di_inst() { interrupt.master = 0; }

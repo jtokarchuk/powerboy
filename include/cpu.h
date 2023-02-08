@@ -30,7 +30,6 @@ struct cpu {
     bool stopped;
     float emulation_speed;
     int ticks;
-    unsigned short operand;
     bool flag_zero;
     bool flag_subtract;
     bool flag_half_carry;
@@ -40,17 +39,19 @@ struct cpu {
 
 struct cpu_instruction {
     char mnemonic[20];
-    int length;
+    unsigned char length;
     int cycles;
     void *function;
 };
 
 void nop();
+
+void ldd_hlp_a();
+
 void ld_bc_nn(unsigned short operand);
 void ld_de_nn(unsigned short operand);
 void ld_hl_nn(unsigned short operand);
 
-void ld_a_a();
 void ld_a_b();
 void ld_a_c();
 void ld_a_d();
@@ -58,13 +59,47 @@ void ld_a_e();
 void ld_a_h();
 void ld_a_l();
 
+void ld_b_a();
+void ld_b_c();
+void ld_b_d();
+void ld_b_e();
+void ld_b_h();
+void ld_b_l();
+
+void ld_c_a();
+void ld_c_b();
+void ld_c_d();
+void ld_c_e();
+void ld_c_h();
+void ld_c_l();
+
+void ld_d_a();
+void ld_d_b();
+void ld_d_c();
+void ld_d_e();
+void ld_d_h();
+void ld_d_l();
+
 void ld_e_a();
 void ld_e_b();
 void ld_e_c();
 void ld_e_d();
-void ld_e_e();
 void ld_e_h();
 void ld_e_l();
+
+void ld_h_a();
+void ld_h_b();
+void ld_h_c();
+void ld_h_d();
+void ld_h_e();
+void ld_h_l();
+
+void ld_l_a();
+void ld_l_b();
+void ld_l_c();
+void ld_l_d();
+void ld_l_e();
+void ld_l_h();
 
 void ld_bcp_a();
 
@@ -77,6 +112,7 @@ void ld_h_n(unsigned char operand);
 void ld_l_n(unsigned char operand);
 
 void ld_ff_ap_n(unsigned char operand);
+void ld_ff_n_ap(unsigned char operand);
 
 void jp_nn(unsigned short operand);
 void jr_nz_n(unsigned char operand);
@@ -96,7 +132,13 @@ void inc_de();
 void inc_hl();
 void inc_sp();
 
+void dec_a();
 void dec_b();
+void dec_c();
+void dec_d();
+void dec_e();
+void dec_h();
+void dec_l();
 
 
 void call_nn(unsigned short operand);
@@ -104,4 +146,18 @@ void call_nn(unsigned short operand);
 void add_hl_de();
 void sub_n(unsigned char operand);
 
-void ccf(void);
+void ccf();
+void ret();
+void ret_nz();
+void ret_c();
+void ret_nc();
+
+void xor_a();
+void xor_b();
+void xor_c();
+void xor_d();
+void xor_e();
+void xor_h();
+void xor_l();
+
+void di_inst();
