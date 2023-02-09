@@ -52,7 +52,7 @@ bool gpu_init() {
 }
 
 void gpu_draw_framebuffer() {
-    SDL_UpdateTexture(gpu_texture, NULL, display_framebuffer, 480 * sizeof(unsigned char) * 3);
+    SDL_UpdateTexture(gpu_texture, NULL, display_framebuffer, GAMEBOY_WIDTH * sizeof(unsigned char) * 3);
     SDL_RenderClear(gpu_renderer);
     SDL_RenderCopy(gpu_renderer, gpu_texture, NULL, NULL);
     SDL_RenderPresent(gpu_renderer);
