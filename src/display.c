@@ -42,6 +42,7 @@ void display_render_scanline() {
         display_framebuffer[pixelOffset].g = gpu_background_palette[colour].g;
         display_framebuffer[pixelOffset].b = gpu_background_palette[colour].b;
 		
+		pixelOffset++;
 		x++;
 		if(x == 8) {
 			x = 0;
@@ -80,8 +81,8 @@ void display_render_scanline() {
                         display_framebuffer[pixelOffset].g = pal[colour].g;
                         display_framebuffer[pixelOffset].b = pal[colour].b;
 
-						pixelOffset++;
 					}
+					pixelOffset++;
 				}
 			}
 		}
