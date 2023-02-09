@@ -56,10 +56,22 @@ void ld_hl_nn(unsigned short operand);
 
 void ld_hlp_n(unsigned char operand);
 void ld_nnp_a(unsigned short operand);
+void ld_a_nnp(unsigned short operand);
 
 void ld_sp_nn(unsigned short operand);
 
 void ldi_a_hlp();
+void ldi_hlp_a();
+
+void ld_a_dep();
+
+void ld_a_hlp();
+void ld_b_hlp();
+void ld_c_hlp();
+void ld_d_hlp();
+void ld_e_hlp();
+void ld_h_hlp();
+void ld_l_hlp();
 
 void ld_a_b();
 void ld_a_c();
@@ -111,6 +123,8 @@ void ld_l_e();
 void ld_l_h();
 
 void ld_bcp_a();
+void ld_dep_a();
+void ld_hlp_a();
 
 void ld_a_n(unsigned char operand);
 void ld_b_n(unsigned char operand);
@@ -125,9 +139,13 @@ void ld_ff_n_ap(unsigned char operand);
 void ld_ff_c_a();
 
 void jp_nn(unsigned short operand);
+void jp_hl();
 void jr_nz_n(unsigned char operand);
+void jr_z_n(unsigned char operand);
+void jp_z_nn(unsigned short operand);
 
 void rst_1();
+void rst_5();
 void rst_7();
 
 void inc_a();
@@ -141,6 +159,7 @@ void inc_bc();
 void inc_de();
 void inc_hl();
 void inc_sp();
+void inc_hlp();
 
 void dec_a();
 void dec_b();
@@ -154,8 +173,17 @@ void dec_bc();
 void dec_de();
 void dec_hl();
 void dec_sp();
+void dec_hlp();
 
 void call_nn(unsigned short operand);
+
+void add_a_a();
+void add_a_b();
+void add_a_c();
+void add_a_d();
+void add_a_e();
+void add_a_h();
+void add_a_l();
 
 void add_hl_de();
 void sub_n(unsigned char operand);
@@ -165,6 +193,7 @@ void ret();
 void ret_nz();
 void ret_c();
 void ret_nc();
+void ret_z();
 
 void xor_a();
 void xor_b();
@@ -192,6 +221,11 @@ void push_bc();
 void push_de();
 void push_hl();
 
+void pop_af();
+void pop_bc();
+void pop_de();
+void pop_hl();
+
 void and_a();
 void and_b();
 void and_c();
@@ -199,3 +233,7 @@ void and_d();
 void and_e();
 void and_h();
 void and_l();
+void and_n(unsigned char operand);
+
+void cpl();
+void scf();
