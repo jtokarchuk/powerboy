@@ -88,7 +88,3 @@ void display_render_scanline() {
 	}
 }
 
-void display_draw_framebuffer() {
-    // to implement
-	printf("test draw framebuffer\n");
-}

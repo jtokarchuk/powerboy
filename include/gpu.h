@@ -14,12 +14,13 @@
 
 #include <SDL.h>
 #include <stdbool.h>
+#include <assert.h>
 #include "display.h"
 
 bool gpu_init();
 void gpu_exit();
 void gpu_emulate();
-void gpu_draw_screen();
+void gpu_draw_framebuffer();
 
 extern SDL_Event gpu_sdl_event;
 extern int gpu_counted_frames;
@@ -30,8 +31,10 @@ extern SDL_Window* gpu_window;
 //The surface contained by the window
 extern SDL_Surface* gpu_surface;
 
+extern SDL_Renderer* gpu_renderer;
+
 //The image we will load and show on the screen
-extern SDL_Surface* gpu_display;
+extern SDL_Texture* gpu_texture;
 
 struct gpu {
 	unsigned char control;
