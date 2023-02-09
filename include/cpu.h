@@ -143,6 +143,7 @@ void jp_hl();
 void jr_nz_n(unsigned char operand);
 void jr_z_n(unsigned char operand);
 void jp_z_nn(unsigned short operand);
+void jr_n(unsigned char operand);
 
 void rst_1();
 void rst_5();

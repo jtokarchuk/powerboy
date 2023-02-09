@@ -7,6 +7,7 @@
 #include "gpu.h"
 #include "interrupts.h"
 #include "rom.h"
+#include "keys.h"
 
 bool application_closing = false;
 

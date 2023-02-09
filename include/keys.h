@@ -1,6 +1,7 @@
 #pragma once
 
 #include "platform.h"
+#include <stdio.h>
 
 struct keys1 {
 	#ifdef LITTLE_E

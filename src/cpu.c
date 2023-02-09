@@ -36,7 +36,7 @@ const struct cpu_instruction cpu_instructions[256] = {
     { "DEC D", 0, 2, dec_d },
     { "LD D, d8", 1, 4, ld_d_n },
     { "RLA", 0, 4, cpu_unimplemented_instruction },
-    { "JR s8", 1, 10, cpu_unimplemented_instruction },
+    { "JR s8", 1, 10, jr_n },
     { "ADD HL, DE", 0, 4, add_hl_de },
     { "LD A, (DE)", 0, 4, ld_a_dep },
     { "DEC DE", 0, 4, dec_de },
@@ -569,6 +569,10 @@ void nop() { } //NOP
 
 //0xc3
 void jp_nn(unsigned short operand) { registers.pc = operand; }
+
+void jr_n(unsigned char operand) {
+	registers.pc += (signed char)operand;
+}
 
 //0xcf
 void rst_1() { mmu_write_short_to_stack(registers.pc); registers.pc = 0x0008; }

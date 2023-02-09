@@ -2,8 +2,8 @@ BINARY       := powerboy
 OBJ          := obj
 BUILD        := 
 SOURCES      := src
-CFLAGS       := -Wall 
-DEBUG_CFLAGS := -Wall
+CFLAGS       := -Wall -std=c11 -fms-extensions
+DEBUG_CFLAGS := -Wall -std=c11 -fms-extensions
 LIBS         := -LC:\development_libraries\SDL2\lib
 INCLUDES     := -Iinclude -IC:\development_libraries\SDL2\include\SDL2
 LINKER_FLAGS := -lmingw32 -lSDL2main -lSDL2

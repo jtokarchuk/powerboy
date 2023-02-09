@@ -39,29 +39,20 @@ bool gpu_init() {
     }
     else
     {
-        //Create window
-        gpu_window = SDL_CreateWindow( "PowerBoy", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 160, 144, SDL_WINDOW_INPUT_FOCUS );
-        if( gpu_window == NULL )
-        {
-            printf( "Window could not be created! SDL_Error: %s\n", SDL_GetError() );
-            success = false;
-        }
-        else
-        {
-            //Get window surface
-            gpu_surface = SDL_GetWindowSurface( gpu_window );
-            gpu_renderer = SDL_CreateRenderer(gpu_window, -1, 0);
-	        SDL_RenderSetLogicalSize(gpu_renderer, GAMEBOY_WIDTH, GAMEBOY_HEIGHT);
-            gpu_texture = SDL_CreateTexture(gpu_renderer, SDL_PIXELFORMAT_RGB24, SDL_TEXTUREACCESS_STREAMING, GAMEBOY_WIDTH, GAMEBOY_HEIGHT);
-        }
+		//Get window surface
+		SDL_SetHint(SDL_HINT_RENDER_VSYNC, "1");
+		SDL_CreateWindowAndRenderer(160, 144, 0, &gpu_window, &gpu_renderer);
+		SDL_SetWindowSize(gpu_window, 480, 432);
+		SDL_SetWindowResizable(gpu_window, SDL_TRUE);
+		gpu_texture = SDL_CreateTexture(gpu_renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STREAMING, 160, 144);
+
     }
 
     return success;
 }
 
 void gpu_draw_framebuffer() {
-    assert(gpu_renderer && gpu_texture);
-    SDL_UpdateTexture(gpu_texture, NULL, display_framebuffer, GAMEBOY_WIDTH * sizeof(unsigned char) * 3);
+    SDL_UpdateTexture(gpu_texture, NULL, display_framebuffer, 480 * sizeof(unsigned char) * 3);
     SDL_RenderClear(gpu_renderer);
     SDL_RenderCopy(gpu_renderer, gpu_texture, NULL, NULL);
     SDL_RenderPresent(gpu_renderer);
