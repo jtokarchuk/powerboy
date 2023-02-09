@@ -54,6 +54,13 @@ void ld_bc_nn(unsigned short operand);
 void ld_de_nn(unsigned short operand);
 void ld_hl_nn(unsigned short operand);
 
+void ld_hlp_n(unsigned char operand);
+void ld_nnp_a(unsigned short operand);
+
+void ld_sp_nn(unsigned short operand);
+
+void ldi_a_hlp();
+
 void ld_a_b();
 void ld_a_c();
 void ld_a_d();
@@ -115,6 +122,7 @@ void ld_l_n(unsigned char operand);
 
 void ld_ff_ap_n(unsigned char operand);
 void ld_ff_n_ap(unsigned char operand);
+void ld_ff_c_a();
 
 void jp_nn(unsigned short operand);
 void jr_nz_n(unsigned char operand);
@@ -142,6 +150,10 @@ void dec_e();
 void dec_h();
 void dec_l();
 
+void dec_bc();
+void dec_de();
+void dec_hl();
+void dec_sp();
 
 void call_nn(unsigned short operand);
 
@@ -162,6 +174,15 @@ void xor_e();
 void xor_h();
 void xor_l();
 
+void or_a();
+void or_b();
+void or_c();
+void or_d();
+void or_e();
+void or_h();
+void or_l();
+
+void ei();
 void di_inst();
 
 void cp_n(unsigned char operand);

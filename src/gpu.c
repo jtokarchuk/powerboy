@@ -35,7 +35,7 @@ bool gpu_init() {
     else
     {
         //Create window
-        gpu_window = SDL_CreateWindow( "SDL Tutorial", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 160, 144, SDL_WINDOW_SHOWN );
+        gpu_window = SDL_CreateWindow( "PowerBoy", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 160, 144, SDL_WINDOW_OPENGL );
         if( gpu_window == NULL )
         {
             printf( "Window could not be created! SDL_Error: %s\n", SDL_GetError() );
@@ -82,8 +82,9 @@ void gpu_emulate(void) {
 				gpu_hblank();
 				
 				if(gpu.scanline == 143) {
-					if(interrupt.enable & INTERRUPTS_VBLANK) interrupt.flags |= INTERRUPTS_VBLANK;
-					
+					if(interrupt.enable & INTERRUPTS_VBLANK) {
+                        interrupt.flags |= INTERRUPTS_VBLANK;
+                    }
 					gpuMode = GPU_MODE_VBLANK;
 				}
 				
@@ -120,7 +121,6 @@ void gpu_emulate(void) {
 		case GPU_MODE_VRAM:
 			if(gpu.tick >= 172) {
 				gpuMode = GPU_MODE_HBLANK;
-				printf("gpu tick hblank");
 				display_render_scanline();
 				gpu.tick -= 172;
 			}
@@ -129,7 +129,7 @@ void gpu_emulate(void) {
 	}
 }
 
-void gpu_hblank(void) {
+void gpu_hblank() {
 	gpu.scanline++;
 }
 

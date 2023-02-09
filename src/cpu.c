@@ -23,7 +23,7 @@ const struct cpu_instruction cpu_instructions[256] = {
     { "LD (a16), SP", 2, 10, cpu_unimplemented_instruction },
     { "ADD HL, BC", 0, 4, cpu_unimplemented_instruction },
     { "LD A, (BC)", 0, 4, cpu_unimplemented_instruction },
-    { "DEC BC", 0, 4, cpu_unimplemented_instruction },
+    { "DEC BC", 0, 4, dec_bc },
     { "INC C", 0, 2, inc_c },
     { "DEC C", 0, 2, dec_c },
     { "LD C, d8", 1, 2, ld_c_n },
@@ -39,7 +39,7 @@ const struct cpu_instruction cpu_instructions[256] = {
     { "JR s8", 1, 10, cpu_unimplemented_instruction },
     { "ADD HL, DE", 0, 4, add_hl_de },
     { "LD A, (DE)", 0, 4, cpu_unimplemented_instruction },
-    { "DEC DE", 0, 4, cpu_unimplemented_instruction },
+    { "DEC DE", 0, 4, dec_de },
     { "INC E", 0, 2, inc_e },
     { "DEC E", 0, 2, dec_e },
     { "LD E, d8", 1, 4, ld_d_n },
@@ -54,24 +54,24 @@ const struct cpu_instruction cpu_instructions[256] = {
     { "DAA", 0, 2, cpu_unimplemented_instruction },
     { "JR Z, s8", 1, 0, cpu_unimplemented_instruction},
     { "ADD HL, HL", 0, 4, cpu_unimplemented_instruction },
-    { "LD A, (HL+)", 0, 4, cpu_unimplemented_instruction },
-    { "DEC HL", 0, 4, cpu_unimplemented_instruction },
+    { "LD A, (HL+)", 0, 4, ldi_a_hlp },
+    { "DEC HL", 0, 4, dec_hl },
     { "INC L", 0, 2, inc_l },
     { "DEC L", 0, 2, dec_l },
     { "LD L, d8", 1, 4, ld_l_n },
     { "CPL", 0, 2, cpu_unimplemented_instruction },
     { "JR NC, s8", 1, 4, cpu_unimplemented_instruction},          // 0x30
-    { "LD SP, d16", 2, 6, cpu_unimplemented_instruction },
+    { "LD SP, d16", 2, 6, ld_sp_nn },
     { "LD (HL-), A", 0, 4, ldd_hlp_a },
     { "INC SP", 0, 4, inc_sp },
     { "INC (HL)", 0, 6, cpu_unimplemented_instruction },
     { "DEC (HL)", 0, 6, cpu_unimplemented_instruction},
-    { "LD (HL), d8", 1, 6, cpu_unimplemented_instruction },
+    { "LD (HL), d8", 1, 6, ld_hlp_n },
     { "SCF", 0, 2, cpu_unimplemented_instruction },
     { "JR C, s8", 1, 0, cpu_unimplemented_instruction },
     { "ADD HL, SP", 0, 4, cpu_unimplemented_instruction },
     { "LD A, (HL-)", 0, 4, cpu_unimplemented_instruction },
-    { "DEC SP", 0, 4, cpu_unimplemented_instruction },
+    { "DEC SP", 0, 4, dec_sp },
     { "INC A", 0, 2, inc_a },
     { "DEC A", 0, 2, dec_a },
     { "LD A, d8", 1, 4, ld_a_n },
@@ -188,14 +188,14 @@ const struct cpu_instruction cpu_instructions[256] = {
     { "XOR L", 0, 2, xor_l },
     { "XOR (HL)", 0, 4, cpu_unimplemented_instruction },
     { "XOR A", 0, 2, xor_a },
-    { "OR B", 0, 2, cpu_unimplemented_instruction },                    // 0xB0
-    { "OR C", 0, 2, cpu_unimplemented_instruction },
-    { "OR D", 0, 2, cpu_unimplemented_instruction },
-    { "OR E", 0, 2, cpu_unimplemented_instruction },
-    { "OR H", 0, 2, cpu_unimplemented_instruction },
-    { "OR L", 0, 2, cpu_unimplemented_instruction },
+    { "OR B", 0, 2, or_b },                    // 0xB0
+    { "OR C", 0, 2, or_c },
+    { "OR D", 0, 2, or_d },
+    { "OR E", 0, 2, or_e },
+    { "OR H", 0, 2, or_h },
+    { "OR L", 0, 2, or_l },
     { "OR (HL)", 0, 4, cpu_unimplemented_instruction },
-    { "OR A", 0, 2, cpu_unimplemented_instruction },
+    { "OR A", 0, 2, or_a },
     { "CP B", 0, 2, cpu_unimplemented_instruction },
     { "CP C", 0, 2, cpu_unimplemented_instruction },
     { "CP D", 0, 2, cpu_unimplemented_instruction },
@@ -238,7 +238,7 @@ const struct cpu_instruction cpu_instructions[256] = {
     { "RST 3", 0, 8, cpu_unimplemented_instruction },
     { "LD (a8), A", 1, 6, ld_ff_n_ap },             // 0xE0
     { "POP HL", 0, 6, cpu_unimplemented_instruction },
-    { "LD (C), A", 0, 4, cpu_unimplemented_instruction },
+    { "LD (C), A", 0, 4, ld_ff_c_a },
     { "NULL (0xE3)", 0, 0, cpu_unimplemented_instruction },
     { "NULL (0xE4)", 0, 0, cpu_unimplemented_instruction },
     { "PUSH HL", 0, 8, cpu_unimplemented_instruction },
@@ -246,7 +246,7 @@ const struct cpu_instruction cpu_instructions[256] = {
     { "RST 4", 0, 8, cpu_unimplemented_instruction },
     { "ADD SP, s8", 1, 8, cpu_unimplemented_instruction },
     { "JP HL", 0, 2, cpu_unimplemented_instruction },
-    { "LD (a16), A", 0, 8, cpu_unimplemented_instruction },
+    { "LD (a16), A", 2, 8, ld_nnp_a },
     { "NULL (0xEB)", 0, 0, cpu_unimplemented_instruction },
     { "NULL (0xEC)", 0, 0, cpu_unimplemented_instruction },
     { "NULL (0xED)", 0, 0, cpu_unimplemented_instruction },
@@ -263,7 +263,7 @@ const struct cpu_instruction cpu_instructions[256] = {
     { "LD HL, SP+s8", 1, 6, cpu_unimplemented_instruction },
     { "LD SP, HL", 0, 4, cpu_unimplemented_instruction },
     { "LD A, (a16)", 2, 8, cpu_unimplemented_instruction },
-    { "EI", 0, 2, cpu_unimplemented_instruction },
+    { "EI", 0, 2, ei },
     { "NULL (0xFC)", 0, 0, cpu_unimplemented_instruction },
     { "NULL (0xFD)", 0, 0, cpu_unimplemented_instruction },
     { "CP d8", 1, 4, cp_n },
@@ -369,38 +369,34 @@ void cpu_emulate() {
     unsigned char instruction;
     unsigned short operand = 0;
     
-    const int MAXCYCLES = 69905; // the maximum amount of cpu cycles per frame
-    cpu.ticks = 0;
-    while (cpu.ticks < MAXCYCLES && !cpu.stopped) {
-        instruction = mmu_read_byte(registers.pc++);
-        cpu.last_instruction = instruction;
+    instruction = mmu_read_byte(registers.pc++);
+    cpu.last_instruction = instruction;
 
-        if(cpu_instructions[instruction].length == 1) operand = (unsigned short)mmu_read_byte(registers.pc);
-        if(cpu_instructions[instruction].length == 2) operand = mmu_read_short(registers.pc); 
+    if(cpu_instructions[instruction].length == 1) operand = (unsigned short)mmu_read_byte(registers.pc);
+    if(cpu_instructions[instruction].length == 2) operand = mmu_read_short(registers.pc); 
 
-        //if (cpu_instructions[instruction].function != cpu_unimplemented_instruction) {
-        //    printf("[Address]: 0x%04x\t[Operand]: 0x%04x\t[Opcode]: 0x%02x: %s\n", registers.pc - 1,  operand, instruction, cpu_instructions[instruction].mnemonic);
-        //}
+    //if (cpu_instructions[instruction].function != cpu_unimplemented_instruction) {
+    //    printf("[Address]: 0x%04x\t[Operand]: 0x%04x\t[Opcode]: 0x%02x: %s\n", registers.pc - 1,  operand, instruction, cpu_instructions[instruction].mnemonic);
+    //}
 
-        registers.pc += cpu_instructions[instruction].length;
+    registers.pc += cpu_instructions[instruction].length;
+    
+    switch(cpu_instructions[instruction].length) {
+        case 0:
+            ((void (*)(void))cpu_instructions[instruction].function)();
+            break;
         
-        switch(cpu_instructions[instruction].length) {
-            case 0:
-                ((void (*)(void))cpu_instructions[instruction].function)();
-                break;
-            
-            case 1:
-                ((void (*)(unsigned char))cpu_instructions[instruction].function)((unsigned char)operand);
-                break;
-            
-            case 2:
-                ((void (*)(unsigned short))cpu_instructions[instruction].function)(operand);
-                break;
-        }
+        case 1:
+            ((void (*)(unsigned char))cpu_instructions[instruction].function)((unsigned char)operand);
+            break;
         
-        
-        cpu.ticks += cpu_instructions[instruction].cycles;
+        case 2:
+            ((void (*)(unsigned short))cpu_instructions[instruction].function)(operand);
+            break;
     }
+    
+    
+    cpu.ticks += cpu_instructions[instruction].cycles;
 }
 
 void cpu_unimplemented_instruction() {
@@ -600,7 +596,13 @@ void dec_e() { registers.e = dec(registers.e); }
 void dec_h() { registers.h = dec(registers.h); }
 void dec_l() { registers.l = dec(registers.l); }
 
+void dec_bc() { registers.bc--; }
+void dec_de() { registers.de--; }
+void dec_hl() { registers.hl--; }
+void dec_sp() { registers.sp--; }
+
 void ldd_hlp_a() { mmu_write_byte(registers.hl, registers.a); registers.hl--; }
+void ld_nnp_a(unsigned short operand) { mmu_write_byte(operand, registers.a); }
 
 void ld_bcp_a() { mmu_write_byte(registers.bc, registers.a); }
 
@@ -615,6 +617,11 @@ void ld_l_n(unsigned char operand) { registers.l = operand; }
 void ld_bc_nn(unsigned short operand) { registers.bc = operand; }
 void ld_de_nn(unsigned short operand) { registers.de = operand; }
 void ld_hl_nn(unsigned short operand) { registers.hl = operand; }
+
+void ld_sp_nn(unsigned short operand) { registers.sp = operand; }
+
+void ld_hlp_n(unsigned char operand) { mmu_write_byte(registers.hl, operand); }
+void ldi_a_hlp() { registers.a = mmu_read_byte(registers.hl++); }
 
 void ld_a_b() { registers.a = registers.b; }
 void ld_a_c() { registers.a = registers.c; }
@@ -673,9 +680,19 @@ void xor_e() { xor(registers.e); }
 void xor_h() { xor(registers.h); }
 void xor_l() { xor(registers.l); }
 
+void or_a() { or(registers.a); }
+void or_b() { or(registers.b); }
+void or_c() { or(registers.c); }
+void or_d() { or(registers.d); }
+void or_e() { or(registers.e); }
+void or_h() { or(registers.h); }
+void or_l() { or(registers.l); }
+
+
 // 0xf0
 void ld_ff_ap_n(unsigned char operand) { registers.a = mmu_read_byte(0xff00 + operand); }
 void ld_ff_n_ap(unsigned char operand) { mmu_write_byte(0xff00 + operand, registers.a); }
+void ld_ff_c_a() { mmu_write_byte(0xff00 + registers.c, registers.a); }
 
 void call_nn(unsigned short operand) { mmu_write_short_to_stack(registers.pc); registers.pc = operand; }
 
@@ -738,3 +755,5 @@ void cp_n(unsigned char operand) {
 	if((operand & 0x0f) > (registers.a & 0x0f)) FLAGS_SET(FLAGS_HALFCARRY);
 	else FLAGS_CLEAR(FLAGS_HALFCARRY);
 }
+
+void ei() { interrupt.master = 1; }

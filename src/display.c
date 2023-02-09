@@ -14,7 +14,6 @@ const COLOUR display_palette[4] = {
 };
 
 void display_render_scanline() {
-	
 	int mapOffset = (gpu.control & GPU_CONTROL_TILEMAP) ? 0x1c00 : 0x1800;
 	mapOffset += (((gpu.scanline + gpu.scroll_y) & 255) >> 3) << 5;
 	

@@ -1,6 +1,9 @@
 #include "mmu.h"
 #include "cpu.h"
 #include "registers.h"
+#include "interrupts.h"
+#include "gpu.h"
+#include "keys.h"
 
 struct mmu mmu;
 
@@ -53,25 +56,25 @@ unsigned char mmu_read_byte(unsigned short address) {
     else if(address == 0xFF04) {
         return (unsigned char)rand();
     }
-    // NYI else if(address == 0xff40) return gpu.control;
-	// NYI else if(address == 0xff42) return gpu.scrollY;
-	// NYI else if(address == 0xff43) return gpu.scrollX;
-	// NYI else if(address == 0xff44) return gpu.scanline;
-    /* NYI else if(address == 0xFF00) {
+    else if(address == 0xff40) return gpu.control;
+	else if(address == 0xff42) return gpu.scroll_y;
+	else if(address == 0xff43) return gpu.scroll_x;
+	else if(address == 0xff44) return gpu.scanline;
+    else if(address == 0xFF00) {
 		if(!(mmu.io[0x00] & 0x20)) {
 			return (unsigned char)(0xc0 | keys.keys1 | 0x10);
 		}
 		
-		else if(!(io[0x00] & 0x10)) {
+		else if(!(mmu.io[0x00] & 0x10)) {
 			return (unsigned char)(0xc0 | keys.keys2 | 0x20);
 		}
 		
-		else if(!(io[0x00] & 0x30)) return 0xff;
+		else if(!(mmu.io[0x00] & 0x30)) return 0xff;
 		else return 0;
-	} */
+	} 
 	
-	// NYI else if(address == 0xff0f) return interrupt.flags;
-	// NYI else if(address == 0xffff) return interrupt.enable;
+	else if(address == 0xff0f) return interrupt.flags;
+	else if(address == 0xffff) return interrupt.enable;
 	
 	else if(address >= 0xff80 && address <= 0xfffe)
 		return mmu.hram[address - 0xff80];
@@ -98,7 +101,7 @@ void mmu_write_byte(unsigned short address, unsigned char value) {
 	
 	else if(address >= 0x8000 && address <= 0x9FFF) {
 		mmu.vram[address - 0x8000] = value;
-		//if(address <= 0x97ff) updateTile(address, value);
+		if(address <= 0x97ff) gpu_update_tile(address, value);
 	}
 	
 	if(address >= 0xc000 && address <= 0xdfff)
@@ -113,31 +116,30 @@ void mmu_write_byte(unsigned short address, unsigned char value) {
 	else if(address >= 0xff80 && address <= 0xfffe)
 		mmu.hram[address - 0xff80] = value;
 	
-	// NYI else if(address == 0xff40) gpu.control = value;
-	// NYI else if(address == 0xff42) gpu.scrollY = value;
-	// NYI else if(address == 0xff43) gpu.scrollX = value;
-	// NYI else if(address == 0xff46) copy(0xfe00, value << 8, 160); // OAM DMA
-	/*
+	else if(address == 0xff40) gpu.control = value;
+	else if(address == 0xff42) gpu.scroll_y = value;
+	else if(address == 0xff43) gpu.scroll_x = value;
+	else if(address == 0xff46) mmu_copy(0xfe00, value << 8, 160); // OAM DMA
+	
 	else if(address == 0xff47) { // write only
 		int i;
-		for(i = 0; i < 4; i++) backgroundPalette[i] = palette[(value >> (i * 2)) & 3];
+		for(i = 0; i < 4; i++) gpu_background_palette[i] = display_palette[(value >> (i * 2)) & 3];
 	}
 	
 	else if(address == 0xff48) { // write only
 		int i;
-		for(i = 0; i < 4; i++) spritePalette[0][i] = palette[(value >> (i * 2)) & 3];
+		for(i = 0; i < 4; i++) gpu_sprite_palette[0][i] = display_palette[(value >> (i * 2)) & 3];
 	}
 	
 	else if(address == 0xff49) { // write only
 		int i;
-		for(i = 0; i < 4; i++) spritePalette[1][i] = palette[(value >> (i * 2)) & 3];
+		for(i = 0; i < 4; i++) gpu_sprite_palette[1][i] = display_palette[(value >> (i * 2)) & 3];
 	}
-	*/
 	else if(address >= 0xff00 && address <= 0xff7f)
 		mmu.io[address - 0xff00] = value;
 	
-	// NYI else if(address == 0xff0f) interrupt.flags = value;
-	// NYI else if(address == 0xffff) interrupt.enable = value;
+	else if(address == 0xff0f) interrupt.flags = value;
+	else if(address == 0xffff) interrupt.enable = value;
 }
 
 void mmu_write_short(unsigned short address, unsigned short value) {

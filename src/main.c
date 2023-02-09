@@ -50,8 +50,6 @@ int main(int argc, char *argv[]) {
     printf("ROM Loaded, starting emulation\n");
 
     while( !application_closing ) {
-        start = SDL_GetTicks();
-        delta += start - end;
 
         while (SDL_PollEvent(&gpu_sdl_event)) {
 			switch (gpu_sdl_event.type) {
@@ -77,17 +75,13 @@ int main(int argc, char *argv[]) {
             }
         }
 
-        if(delta > 1000/60.0) {
-
-            if (!cpu.stopped) {
-                cpu_emulate();
-                gpu_emulate();
-                interrupts_emulate();
-                delta = 0;
-            }
+        if (!cpu.stopped) {
+            cpu_emulate();
+            gpu_emulate();
+            interrupts_emulate();
+            delta = 0;
         }
-
-        end = SDL_GetTicks();
+    
 
     }
     
