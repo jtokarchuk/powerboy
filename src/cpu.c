@@ -172,14 +172,14 @@ const struct cpu_instruction cpu_instructions[256] = {
     { "SBC A, L", 0, 2, cpu_unimplemented_instruction },
     { "SBC A, (HL)", 0, 4, cpu_unimplemented_instruction },
     { "SBC A, A", 0, 2, cpu_unimplemented_instruction },
-    { "AND B", 0, 2, cpu_unimplemented_instruction },                   // 0xA0
-    { "AND C", 0, 2, cpu_unimplemented_instruction },
-    { "AND D", 0, 2, cpu_unimplemented_instruction },
-    { "AND E", 0, 2, cpu_unimplemented_instruction },
-    { "AND H", 0, 2, cpu_unimplemented_instruction },
-    { "AND L", 0, 2, cpu_unimplemented_instruction },
+    { "AND B", 0, 2, and_b },                   // 0xA0
+    { "AND C", 0, 2, and_c },
+    { "AND D", 0, 2, and_d },
+    { "AND E", 0, 2, and_e },
+    { "AND H", 0, 2, and_h },
+    { "AND L", 0, 2, and_l },
     { "AND (HL)", 0, 4, cpu_unimplemented_instruction },
-    { "AND A", 0, 2, cpu_unimplemented_instruction },
+    { "AND A", 0, 2, and_a },
     { "XOR B", 0, 2, xor_b },
     { "XOR C", 0, 2, xor_c },
     { "XOR D", 0, 2, xor_d },
@@ -209,7 +209,7 @@ const struct cpu_instruction cpu_instructions[256] = {
     { "JP NZ, a16", 2, 0, cpu_unimplemented_instruction },
     { "JP 0x%04X", 2, 6, jp_nn },
     { "CALL NZ, a16", 2, 0, cpu_unimplemented_instruction },
-    { "PUSH BC", 0, 8, cpu_unimplemented_instruction },
+    { "PUSH BC", 0, 8, push_bc },
     { "ADD A, d8", 1, 4, cpu_unimplemented_instruction },
     { "RST 0", 0, 8, cpu_unimplemented_instruction },
     { "RET Z", 0, 0, cpu_unimplemented_instruction },
@@ -225,7 +225,7 @@ const struct cpu_instruction cpu_instructions[256] = {
     { "JP NC, a16", 2, 0, cpu_unimplemented_instruction },
     { "NULL (0xD3)", 0, 0, cpu_unimplemented_instruction },
     { "CALL NC, a16", 2, 0, cpu_unimplemented_instruction },
-    { "PUSH DE", 0, 8, cpu_unimplemented_instruction },
+    { "PUSH DE", 0, 8, push_de },
     { "SUB d8", 1, 4, sub_n },
     { "RST 2", 0, 8, cpu_unimplemented_instruction },
     { "RET C", 0, 0, ret_c },
@@ -241,7 +241,7 @@ const struct cpu_instruction cpu_instructions[256] = {
     { "LD (C), A", 0, 4, ld_ff_c_a },
     { "NULL (0xE3)", 0, 0, cpu_unimplemented_instruction },
     { "NULL (0xE4)", 0, 0, cpu_unimplemented_instruction },
-    { "PUSH HL", 0, 8, cpu_unimplemented_instruction },
+    { "PUSH HL", 0, 8, push_hl },
     { "AND d8", 1, 4, cpu_unimplemented_instruction },
     { "RST 4", 0, 8, cpu_unimplemented_instruction },
     { "ADD SP, s8", 1, 8, cpu_unimplemented_instruction },
@@ -257,7 +257,7 @@ const struct cpu_instruction cpu_instructions[256] = {
     { "LD A, (C)", 0, 4, cpu_unimplemented_instruction },
     { "DI", 0, 0, di_inst },
     { "NULL (0xF4)", 0, 0, cpu_unimplemented_instruction },
-    { "PUSH AF", 0, 8, cpu_unimplemented_instruction },
+    { "PUSH AF", 0, 8, push_af },
     { "OR d8", 1, 4, cpu_unimplemented_instruction },
     { "RST 6", 0, 8, cpu_unimplemented_instruction },
     { "LD HL, SP+s8", 1, 6, cpu_unimplemented_instruction },
@@ -688,6 +688,14 @@ void or_e() { or(registers.e); }
 void or_h() { or(registers.h); }
 void or_l() { or(registers.l); }
 
+void and_a() { and(registers.a); }
+void and_b() { and(registers.b); }
+void and_c() { and(registers.c); }
+void and_d() { and(registers.d); }
+void and_e() { and(registers.e); }
+void and_h() { and(registers.h); }
+void and_l() { and(registers.l); }
+
 
 // 0xf0
 void ld_ff_ap_n(unsigned char operand) { registers.a = mmu_read_byte(0xff00 + operand); }
@@ -757,3 +765,8 @@ void cp_n(unsigned char operand) {
 }
 
 void ei() { interrupt.master = 1; }
+
+void push_af(void) { mmu_write_short_to_stack(registers.af); }
+void push_bc(void) { mmu_write_short_to_stack(registers.bc); }
+void push_de(void) { mmu_write_short_to_stack(registers.de); }
+void push_hl(void) { mmu_write_short_to_stack(registers.hl); }

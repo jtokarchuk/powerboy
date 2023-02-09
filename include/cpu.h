@@ -186,3 +186,16 @@ void ei();
 void di_inst();
 
 void cp_n(unsigned char operand);
+
+void push_af();
+void push_bc();
+void push_de();
+void push_hl();
+
+void and_a();
+void and_b();
+void and_c();
+void and_d();
+void and_e();
+void and_h();
+void and_l();
