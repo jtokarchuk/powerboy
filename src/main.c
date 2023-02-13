@@ -14,10 +14,6 @@ bool application_closing = false;
 int main(int argc, char *argv[]) {
     printf("PowerEmu Initializing...\n");
 
-    unsigned int start = SDL_GetTicks();
-    unsigned int end = SDL_GetTicks();
-    double delta = 0;
-
     char *filename;
 
     printf("argc = %d\n", argc);
@@ -58,15 +54,106 @@ int main(int argc, char *argv[]) {
                     printf("Got close event\n");
 					application_closing = true;
                     break;
-                case SDL_KEYDOWN:  /* Handle a KEYDOWN event */
-                    printf("Key down %d\n", gpu_sdl_event.key.keysym.sym);
-                    if(gpu_sdl_event.key.keysym.sym == SDLK_ESCAPE){
-                        application_closing = true;
-                        break;
+                case SDL_KEYDOWN:
+                    switch( gpu_sdl_event.key.keysym.sym ){
+                        case SDLK_ESCAPE:
+                            application_closing = true;
+                            break;
+                        case SDLK_UP:
+                            keys.up = 0;
+                            cpu.stopped = false;
+                            interrupts_fire_joypad();
+                            break;
+                        case SDLK_DOWN:
+                            keys.down = 0;
+                            cpu.stopped = false;
+                            interrupts_fire_joypad();
+                            break;
+                        case SDLK_LEFT:
+                            keys.left = 0;
+                            cpu.stopped = false;
+                            interrupts_fire_joypad();
+                            break;
+                        case SDLK_RIGHT:
+                            keys.right = 0;
+                            cpu.stopped = false;
+                            interrupts_fire_joypad();
+                            break;
+                        case SDLK_x:
+                            keys.a = 0;
+                            cpu.stopped = false;
+                            interrupts_fire_joypad();
+                            break;
+                        case SDLK_z:
+                            keys.b = 0;
+                            cpu.stopped = false;
+                            interrupts_fire_joypad();
+                            break;
+                        case SDLK_RETURN:
+                            keys.start = 0;
+                            cpu.stopped = false;
+                            interrupts_fire_joypad();
+                            break;
+                        case SDLK_SPACE:
+                            keys.select = 0;
+                            cpu.stopped = false;
+                            interrupts_fire_joypad();
+                            break;
+                        case SDLK_q:
+                            cpu.debug_key = true;
+                            interrupts_fire_joypad();
+                            break;
                     }
                     break;
-                case SDL_KEYUP:
-                    printf("Key up: %d\n", gpu_sdl_event.key.keysym.sym);
+                case SDL_KEYUP:  /* Handle a KEYDOWN event */
+                    switch( gpu_sdl_event.key.keysym.sym ){
+                        case SDLK_ESCAPE:
+                            application_closing = true;
+                            break;
+                        case SDLK_UP:
+                            keys.up = 1;
+                            cpu.stopped = false;
+                            interrupts_fire_joypad();
+                            break;
+                        case SDLK_DOWN:
+                            keys.down = 1;
+                            cpu.stopped = false;
+                            interrupts_fire_joypad();
+                            break;
+                        case SDLK_LEFT:
+                            keys.left = 1;
+                            cpu.stopped = false;
+                            interrupts_fire_joypad();
+                            break;
+                        case SDLK_RIGHT:
+                            keys.right = 1;
+                            cpu.stopped = false;
+                            interrupts_fire_joypad();
+                            break;
+                        case SDLK_x:
+                            keys.a = 1;
+                            cpu.stopped = false;
+                            interrupts_fire_joypad();
+                            break;
+                        case SDLK_z:
+                            keys.b = 1;
+                            cpu.stopped = false;
+                            interrupts_fire_joypad();
+                            break;
+                        case SDLK_RETURN:
+                            keys.start = 1;
+                            cpu.stopped = false;
+                            interrupts_fire_joypad();
+                            break;
+                        case SDLK_SPACE:
+                            keys.select = 1;
+                            cpu.stopped = false;
+                            interrupts_fire_joypad();
+                            break;
+                        case SDLK_q:
+                            cpu.debug_key = false;
+                            break;
+                    }
                     break;
                 case SDL_MOUSEMOTION:
                     break;
@@ -80,7 +167,6 @@ int main(int argc, char *argv[]) {
             cpu_emulate();
             gpu_emulate();
             interrupts_emulate();
-            delta = 0;
         }
     
 

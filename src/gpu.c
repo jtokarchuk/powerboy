@@ -42,9 +42,9 @@ bool gpu_init() {
 		//Get window surface
 		SDL_SetHint(SDL_HINT_RENDER_VSYNC, "1");
 		SDL_CreateWindowAndRenderer(160, 144, 0, &gpu_window, &gpu_renderer);
-		SDL_SetWindowSize(gpu_window, 160, 144);
-		//SDL_SetWindowResizable(gpu_window, SDL_TRUE);
-		gpu_texture = SDL_CreateTexture(gpu_renderer, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_STREAMING, 160, 144);
+		SDL_SetWindowSize(gpu_window, GAMEBOY_WIDTH * 3, GAMEBOY_WIDTH * 3);
+		SDL_SetWindowResizable(gpu_window, SDL_TRUE);
+		gpu_texture = SDL_CreateTexture(gpu_renderer, SDL_PIXELFORMAT_RGB24, SDL_TEXTUREACCESS_STREAMING, 160, 144);
 
     }
 

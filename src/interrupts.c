@@ -32,6 +32,7 @@ void interrupts_emulate() {
 		
 		if(fire & INTERRUPTS_JOYPAD) {
 			interrupt.flags &= ~INTERRUPTS_JOYPAD;
+			printf("joypad\n");
 			interrupts_joypad();
 		}
 	}
@@ -49,7 +50,7 @@ void interrupts_vblank() {
 void interrupts_lcd_stat() {
     interrupt.master = 0;
     mmu_write_short_to_stack(registers.pc);
-    registers.pc = 0x50;
+    registers.pc = 0x48;
     cpu.ticks += 12;
 }
 
@@ -64,11 +65,12 @@ void interrupts_timer() {
 void interrupts_serial() {
     interrupt.master = 0;
     mmu_write_short_to_stack(registers.pc);
-    registers.pc = 0x60;
+    registers.pc = 0x58;
     cpu.ticks += 12;
 }
 
 void interrupts_joypad() {
+	printf("joypad");
     interrupt.master = 0;
     mmu_write_short_to_stack(registers.pc);
     registers.pc = 0x60;
@@ -78,4 +80,8 @@ void interrupts_joypad() {
 void interrupts_return() {
     interrupt.master = 1;
     registers.pc = mmu_read_short_from_stack();
+}
+
+void interrupts_fire_joypad() {
+	if(interrupt.enable & INTERRUPTS_JOYPAD) interrupt.flags |= INTERRUPTS_JOYPAD;
 }

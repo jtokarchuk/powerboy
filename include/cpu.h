@@ -36,6 +36,7 @@ struct cpu {
     bool flag_subtract;
     bool flag_half_carry;
     bool flag_carry;
+    bool debug_key;
     unsigned short last_instruction;
 } extern cpu;
 
@@ -61,7 +62,17 @@ void ld_a_nnp(unsigned short operand);
 void ld_sp_nn(unsigned short operand);
 
 void ldi_a_hlp();
+void ldd_a_hlp();
 void ldi_hlp_a();
+
+void ld_hlp_b();
+void ld_hlp_c();
+void ld_hlp_d();
+void ld_hlp_e();
+void ld_hlp_h();
+void ld_hlp_l();
+void ld_hlp_a();
+
 
 void ld_a_dep();
 
@@ -124,7 +135,8 @@ void ld_l_h();
 
 void ld_bcp_a();
 void ld_dep_a();
-void ld_hlp_a();
+
+void ld_a_bcp();
 
 void ld_a_n(unsigned char operand);
 void ld_b_n(unsigned char operand);
@@ -139,6 +151,7 @@ void ld_ff_n_ap(unsigned char operand);
 void ld_ff_c_a();
 
 void jp_nn(unsigned short operand);
+void jp_nz_nn(unsigned short operand);
 void jp_hl();
 void jr_nz_n(unsigned char operand);
 void jr_z_n(unsigned char operand);
@@ -185,8 +198,16 @@ void add_a_d();
 void add_a_e();
 void add_a_h();
 void add_a_l();
+void add_a_n(unsigned char operand);
+void add_a_hlp();
 
+
+void add_hl_bc();
 void add_hl_de();
+void add_hl_hl();
+void add_hl_sp();
+
+
 void sub_n(unsigned char operand);
 
 void ccf();
@@ -211,6 +232,7 @@ void or_d();
 void or_e();
 void or_h();
 void or_l();
+void or_n(unsigned char operand);
 
 void ei();
 void di_inst();
@@ -238,3 +260,4 @@ void and_n(unsigned char operand);
 
 void cpl();
 void scf();
+void daa();

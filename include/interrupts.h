@@ -1,4 +1,6 @@
 #pragma once
+#include <stdio.h>
+
 #include "platform.h"
 
 #define INTERRUPTS_VBLANK       (1 << 0)
@@ -14,7 +16,7 @@ struct interrupt {
 } extern interrupt;
 
 extern void interrupts_emulate();
-
+extern void interrupts_fire_joypad();
 void interrupts_vblank();
 void interrupts_lcd_stat();
 void interrupts_timer();

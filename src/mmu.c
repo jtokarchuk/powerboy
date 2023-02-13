@@ -62,10 +62,15 @@ unsigned char mmu_read_byte(unsigned short address) {
 	else if(address == 0xff44) return gpu.scanline;
     else if(address == 0xFF00) {
 		if(!(mmu.io[0x00] & 0x20)) {
+			//printf("keys1: %02x",(unsigned char)(0xc0 | keys.keys1 | 0x10));
+			//printf("\n");
 			return (unsigned char)(0xc0 | keys.keys1 | 0x10);
+			
 		}
 		
 		else if(!(mmu.io[0x00] & 0x10)) {
+			//printf("keys2: %02x",(unsigned char)(0xc0 | keys.keys2 | 0x20));
+			//printf("\n");
 			return (unsigned char)(0xc0 | keys.keys2 | 0x20);
 		}
 		

@@ -21,8 +21,8 @@ const struct cpu_instruction cpu_instructions[256] = {
     { "LD B, d8", 1, 4, ld_b_n },
     { "RLCA", 0, 4, cpu_unimplemented_instruction },
     { "LD (a16), SP", 2, 10, cpu_unimplemented_instruction },
-    { "ADD HL, BC", 0, 4, cpu_unimplemented_instruction },
-    { "LD A, (BC)", 0, 4, cpu_unimplemented_instruction },
+    { "ADD HL, BC", 0, 4, add_hl_bc },
+    { "LD A, (BC)", 0, 4, ld_a_bcp },
     { "DEC BC", 0, 4, dec_bc },
     { "INC C", 0, 2, inc_c },
     { "DEC C", 0, 2, dec_c },
@@ -51,9 +51,9 @@ const struct cpu_instruction cpu_instructions[256] = {
     { "INC H", 0, 2, inc_h },
     { "DEC H", 0, 2, dec_h },
     { "LD H, d8", 1, 4, ld_h_n },
-    { "DAA", 0, 2, cpu_unimplemented_instruction },
+    { "DAA", 0, 2, daa },
     { "JR Z, s8", 1, 0, jr_z_n},
-    { "ADD HL, HL", 0, 4, cpu_unimplemented_instruction },
+    { "ADD HL, HL", 0, 4, add_hl_hl },
     { "LD A, (HL+)", 0, 4, ldi_a_hlp },
     { "DEC HL", 0, 4, dec_hl },
     { "INC L", 0, 2, inc_l },
@@ -69,8 +69,8 @@ const struct cpu_instruction cpu_instructions[256] = {
     { "LD (HL), d8", 1, 6, ld_hlp_n },
     { "SCF", 0, 2, scf },
     { "JR C, s8", 1, 0, cpu_unimplemented_instruction },
-    { "ADD HL, SP", 0, 4, cpu_unimplemented_instruction },
-    { "LD A, (HL-)", 0, 4, cpu_unimplemented_instruction },
+    { "ADD HL, SP", 0, 4, add_hl_sp },
+    { "LD A, (HL-)", 0, 4, ldd_a_hlp },
     { "DEC SP", 0, 4, dec_sp },
     { "INC A", 0, 2, inc_a },
     { "DEC A", 0, 2, dec_a },
@@ -124,12 +124,12 @@ const struct cpu_instruction cpu_instructions[256] = {
     { "LD L, L", 0, 2, nop },
     { "LD L, (HL)", 0, 4, ld_l_hlp },
     { "LD L, A", 0, 2, ld_l_a },
-    { "LD (HL), B", 0, 4, cpu_unimplemented_instruction },            // 0x70
-    { "LD (HL), C", 0, 4, cpu_unimplemented_instruction },
-    { "LD (HL), D", 0, 4, cpu_unimplemented_instruction },
-    { "LD (HL), E", 0, 4, cpu_unimplemented_instruction },
-    { "LD (HL), H", 0, 4, cpu_unimplemented_instruction },
-    { "LD (HL), L", 0, 4, cpu_unimplemented_instruction },
+    { "LD (HL), B", 0, 4, ld_hlp_b },            // 0x70
+    { "LD (HL), C", 0, 4, ld_hlp_c },
+    { "LD (HL), D", 0, 4, ld_hlp_d },
+    { "LD (HL), E", 0, 4, ld_hlp_e },
+    { "LD (HL), H", 0, 4, ld_hlp_h },
+    { "LD (HL), L", 0, 4, ld_hlp_l },
     { "HALT", 0, 2, cpu_unimplemented_instruction },
     { "LD (HL), A", 0, 4, ld_hlp_a },
     { "LD A, B", 0, 2, ld_a_b },
@@ -146,7 +146,7 @@ const struct cpu_instruction cpu_instructions[256] = {
     { "ADD A, E", 0, 2, add_a_e },
     { "ADD A, H", 0, 2, add_a_h },
     { "ADD A, L", 0, 2, add_a_l },
-    { "ADD A, (HL)", 0, 4, cpu_unimplemented_instruction },
+    { "ADD A, (HL)", 0, 4, add_a_hlp },
     { "ADD A, A", 0, 2, add_a_a },
     { "ADC A, B", 0, 2, cpu_unimplemented_instruction },
     { "ADC A, C", 0, 2, cpu_unimplemented_instruction },
@@ -206,11 +206,11 @@ const struct cpu_instruction cpu_instructions[256] = {
     { "CP A", 0, 2, cpu_unimplemented_instruction },
     { "RET NZ", 0, 0, ret_nz },                 // 0xC0
     { "POP BC", 0, 6, pop_bc },
-    { "JP NZ, a16", 2, 0, cpu_unimplemented_instruction },
+    { "JP NZ, a16", 2, 0, jp_nz_nn },
     { "JP 0x%04X", 2, 6, jp_nn },
     { "CALL NZ, a16", 2, 0, cpu_unimplemented_instruction },
     { "PUSH BC", 0, 8, push_bc },
-    { "ADD A, d8", 1, 4, cpu_unimplemented_instruction },
+    { "ADD A, d8", 1, 4, add_a_n },
     { "RST 0", 0, 8, cpu_unimplemented_instruction },
     { "RET Z", 0, 0, ret_z },
     { "RET", 0, 2, ret },
@@ -258,7 +258,7 @@ const struct cpu_instruction cpu_instructions[256] = {
     { "DI", 0, 0, di_inst },
     { "NULL (0xF4)", 0, 0, cpu_unimplemented_instruction },
     { "PUSH AF", 0, 8, push_af },
-    { "OR d8", 1, 4, cpu_unimplemented_instruction },
+    { "OR d8", 1, 4, or_n },
     { "RST 6", 0, 8, cpu_unimplemented_instruction },
     { "LD HL, SP+s8", 1, 6, cpu_unimplemented_instruction },
     { "LD SP, HL", 0, 4, cpu_unimplemented_instruction },
@@ -282,6 +282,7 @@ void cpu_reset() {
     cpu.stopped = false;
     cpu.emulation_speed = 1;
     cpu.ticks = 0;
+    cpu.debug_key = false;
 
     registers.a = 0x01;
     registers.f = 0xb0;
@@ -375,9 +376,11 @@ void cpu_emulate() {
     if(cpu_instructions[instruction].length == 1) operand = (unsigned short)mmu_read_byte(registers.pc);
     if(cpu_instructions[instruction].length == 2) operand = mmu_read_short(registers.pc); 
 
-    //if (cpu_instructions[instruction].function != cpu_unimplemented_instruction) {
-    //    printf("[Address]: 0x%04x\t[Operand]: 0x%04x\t[Opcode]: 0x%02x: %s\n", registers.pc - 1,  operand, instruction, cpu_instructions[instruction].mnemonic);
-    //}
+    if (cpu_instructions[instruction].function != cpu_unimplemented_instruction && cpu.debug_key == true) {
+        printf("[Address]: 0x%04x\t[Operand]: 0x%04x\t[Opcode]: 0x%02x: %s\n", registers.pc - 1,  operand, instruction, cpu_instructions[instruction].mnemonic);
+    }
+
+    
 
     registers.pc += cpu_instructions[instruction].length;
     
@@ -562,13 +565,17 @@ static void cp(unsigned char value) {
 	FLAGS_SET(FLAGS_NEGATIVE);
 }
 
-// 0x00
 void nop() { } //NOP
-// 0x01
 
-
-//0xc3
 void jp_nn(unsigned short operand) { registers.pc = operand; }
+
+void jp_nz_nn(unsigned short operand) {
+	if(FLAGS_ISZERO) cpu.ticks += 12;
+	else {
+		registers.pc = operand;
+		cpu.ticks += 16;
+	}
+}
 
 void jr_n(unsigned char operand) {
 	registers.pc += (signed char)operand;
@@ -609,12 +616,20 @@ void dec_sp() { registers.sp--; }
 void dec_hlp() { mmu_write_byte(registers.hl, dec(mmu_read_byte(registers.hl))); }
 
 void ldd_hlp_a() { mmu_write_byte(registers.hl, registers.a); registers.hl--; }
+void ldd_a_hlp() { registers.a = mmu_read_byte(registers.hl--); }
 void ld_nnp_a(unsigned short operand) { mmu_write_byte(operand, registers.a); }
 void ld_a_nnp(unsigned short operand) { registers.a = mmu_read_byte(operand); }
 
+void ld_hlp_b() { mmu_write_byte(registers.hl, registers.b); }
+void ld_hlp_c() { mmu_write_byte(registers.hl, registers.c); }
+void ld_hlp_d() { mmu_write_byte(registers.hl, registers.d); }
+void ld_hlp_e() { mmu_write_byte(registers.hl, registers.e); }
+void ld_hlp_h() { mmu_write_byte(registers.hl, registers.h); }
+void ld_hlp_l() { mmu_write_byte(registers.hl, registers.l); }
+void ld_hlp_a() { mmu_write_byte(registers.hl, registers.a); }
+
 void ld_bcp_a() { mmu_write_byte(registers.bc, registers.a); }
 void ld_dep_a() { mmu_write_byte(registers.de, registers.a); }
-void ld_hlp_a() { mmu_write_byte(registers.hl, registers.a); }
 
 void ld_a_n(unsigned char operand) { registers.a = operand; }
 void ld_b_n(unsigned char operand) { registers.b = operand; }
@@ -635,6 +650,7 @@ void ld_hlp_n(unsigned char operand) { mmu_write_byte(registers.hl, operand); }
 void ldi_hlp_a() { mmu_write_byte(registers.hl++, registers.a); }
 void ldi_a_hlp() { registers.a = mmu_read_byte(registers.hl++); }
 
+void ld_a_bcp() { registers.a = mmu_read_byte(registers.bc); }
 void ld_a_dep() { registers.a = mmu_read_byte(registers.de); }
 
 void ld_a_hlp() { registers.a = mmu_read_byte(registers.hl); }
@@ -711,6 +727,7 @@ void or_d() { or(registers.d); }
 void or_e() { or(registers.e); }
 void or_h() { or(registers.h); }
 void or_l() { or(registers.l); }
+void or_n(unsigned char operand) { or(operand); }
 
 void and_a() { and(registers.a); }
 void and_b() { and(registers.b); }
@@ -745,8 +762,13 @@ void add_a_d() { add(&registers.a, registers.d); }
 void add_a_e() { add(&registers.a, registers.e); }
 void add_a_h() { add(&registers.a, registers.h); }
 void add_a_l() { add(&registers.a, registers.l); }
+void add_a_n(unsigned char operand) { add(&registers.a, operand); }
+void add_a_hlp() { add(&registers.a, mmu_read_byte(registers.hl)); }
 
+void add_hl_bc() { add2(&registers.hl, registers.bc); }
 void add_hl_de() { add2(&registers.hl, registers.de); }
+void add_hl_hl() { add2(&registers.hl, registers.hl); }
+void add_hl_sp() { add2(&registers.hl, registers.sp); }
 
 void sub_n(unsigned char operand) { sub(operand); }
 
@@ -811,7 +833,7 @@ void ret_z() {
 	else cpu.ticks += 8;
 }
 
-void di_inst() { interrupt.master = 0; }
+void di_inst() { interrupt.master = 0; printf("interrupts disabled\n"); }
 
 void cp_n(unsigned char operand) {
 	FLAGS_SET(FLAGS_NEGATIVE);
@@ -826,7 +848,7 @@ void cp_n(unsigned char operand) {
 	else FLAGS_CLEAR(FLAGS_HALFCARRY);
 }
 
-void ei() { interrupt.master = 1; }
+void ei() { interrupt.master = 1; printf("interrupts enabled\n"); }
 
 void push_af() { mmu_write_short_to_stack(registers.af); }
 void push_bc() { mmu_write_short_to_stack(registers.bc); }
@@ -850,3 +872,26 @@ void jr_z_n(unsigned char operand) {
 
 void cpl() { registers.a = ~registers.a; FLAGS_SET(FLAGS_NEGATIVE | FLAGS_HALFCARRY); }
 void scf() { FLAGS_SET(FLAGS_CARRY); FLAGS_CLEAR(FLAGS_NEGATIVE | FLAGS_HALFCARRY); }
+
+void daa(void) {
+	{
+		unsigned short s = registers.a;
+		
+		if(FLAGS_ISNEGATIVE) {
+			if(FLAGS_ISHALFCARRY) s = (s - 0x06)&0xFF;
+			if(FLAGS_ISCARRY) s -= 0x60;
+		}
+		else {
+			if(FLAGS_ISHALFCARRY || (s & 0xF) > 9) s += 0x06;
+			if(FLAGS_ISCARRY || s > 0x9F) s += 0x60;
+		}
+		
+		registers.a = s;
+		FLAGS_CLEAR(FLAGS_HALFCARRY);
+		
+		if(registers.a) FLAGS_CLEAR(FLAGS_ZERO);
+		else FLAGS_SET(FLAGS_ZERO);
+		
+		if(s >= 0x100) FLAGS_SET(FLAGS_CARRY);
+	}
+}
