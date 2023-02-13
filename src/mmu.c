@@ -62,15 +62,10 @@ unsigned char mmu_read_byte(unsigned short address) {
 	else if(address == 0xff44) return gpu.scanline;
     else if(address == 0xFF00) {
 		if(!(mmu.io[0x00] & 0x20)) {
-			//printf("keys1: %02x",(unsigned char)(0xc0 | keys.keys1 | 0x10));
-			//printf("\n");
 			return (unsigned char)(0xc0 | keys.keys1 | 0x10);
-			
 		}
 		
 		else if(!(mmu.io[0x00] & 0x10)) {
-			//printf("keys2: %02x",(unsigned char)(0xc0 | keys.keys2 | 0x20));
-			//printf("\n");
 			return (unsigned char)(0xc0 | keys.keys2 | 0x20);
 		}
 		
@@ -140,11 +135,16 @@ void mmu_write_byte(unsigned short address, unsigned char value) {
 		int i;
 		for(i = 0; i < 4; i++) gpu_sprite_palette[1][i] = display_palette[(value >> (i * 2)) & 3];
 	}
-	else if(address >= 0xff00 && address <= 0xff7f)
+	else if(address >= 0xff00 && address <= 0xff7f) {
 		mmu.io[address - 0xff00] = value;
+	}
 	
-	else if(address == 0xff0f) interrupt.flags = value;
-	else if(address == 0xffff) interrupt.enable = value;
+	else if(address == 0xff0f) {
+		interrupt.flags = value; 
+	}
+	else if(address == 0xffff) {
+		interrupt.enable = value; 
+	}
 }
 
 void mmu_write_short(unsigned short address, unsigned short value) {

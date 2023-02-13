@@ -30,6 +30,7 @@ void cpu_unimplemented_instruction();
 
 struct cpu {
     bool stopped;
+    unsigned short instruction;
     float emulation_speed;
     int ticks;
     bool flag_zero;

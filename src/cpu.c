@@ -279,6 +279,7 @@ void cpu_reset() {
     memset(mmu.hram, 0, sizeof(mmu.hram));
     memcpy(mmu.io, mmu_io_reset, sizeof(mmu.io));
 
+    cpu.instruction = 0;
     cpu.stopped = false;
     cpu.emulation_speed = 1;
     cpu.ticks = 0;
@@ -367,39 +368,41 @@ void cpu_reset() {
 }
 
 void cpu_emulate() {
-    unsigned char instruction;
+   cpu.instruction = 0;
     unsigned short operand = 0;
     
-    instruction = mmu_read_byte(registers.pc++);
-    cpu.last_instruction = instruction;
+    cpu.instruction = mmu_read_byte(registers.pc++);
+    cpu.last_instruction = cpu.instruction;
 
-    if(cpu_instructions[instruction].length == 1) operand = (unsigned short)mmu_read_byte(registers.pc);
-    if(cpu_instructions[instruction].length == 2) operand = mmu_read_short(registers.pc); 
+    if(cpu_instructions[cpu.instruction].length == 1) operand = (unsigned short)mmu_read_byte(registers.pc);
+    if(cpu_instructions[cpu.instruction].length == 2) operand = mmu_read_short(registers.pc); 
 
-    if (cpu_instructions[instruction].function != cpu_unimplemented_instruction && cpu.debug_key == true) {
-        printf("[Address]: 0x%04x\t[Operand]: 0x%04x\t[Opcode]: 0x%02x: %s\n", registers.pc - 1,  operand, instruction, cpu_instructions[instruction].mnemonic);
+    //if (cpu.debug_key == true) {
+    //    printf("[Address]: 0x%04x\t[Operand]: 0x%04x\t[Opcode]: 0x%02x: %s\n", registers.pc - 1,  operand, cpu.instruction, cpu_instructions[cpu.instruction].mnemonic);
+    //}
+
+    if (registers.pc - 1 == 0x2f0 && cpu.debug_key) {
+        cpu_print_registers();
     }
 
+    registers.pc += cpu_instructions[cpu.instruction].length;
     
-
-    registers.pc += cpu_instructions[instruction].length;
-    
-    switch(cpu_instructions[instruction].length) {
+    switch(cpu_instructions[cpu.instruction].length) {
         case 0:
-            ((void (*)(void))cpu_instructions[instruction].function)();
+            ((void (*)(void))cpu_instructions[cpu.instruction].function)();
             break;
         
         case 1:
-            ((void (*)(unsigned char))cpu_instructions[instruction].function)((unsigned char)operand);
+            ((void (*)(unsigned char))cpu_instructions[cpu.instruction].function)((unsigned char)operand);
             break;
         
         case 2:
-            ((void (*)(unsigned short))cpu_instructions[instruction].function)(operand);
+            ((void (*)(unsigned short))cpu_instructions[cpu.instruction].function)(operand);
             break;
     }
     
     
-    cpu.ticks += cpu_instructions[instruction].cycles;
+    cpu.ticks += cpu_instructions[cpu.instruction].cycles;
 }
 
 void cpu_unimplemented_instruction() {
@@ -833,7 +836,7 @@ void ret_z() {
 	else cpu.ticks += 8;
 }
 
-void di_inst() { interrupt.master = 0; printf("interrupts disabled\n"); }
+void di_inst() { interrupt.master = 0; }
 
 void cp_n(unsigned char operand) {
 	FLAGS_SET(FLAGS_NEGATIVE);
@@ -848,7 +851,7 @@ void cp_n(unsigned char operand) {
 	else FLAGS_CLEAR(FLAGS_HALFCARRY);
 }
 
-void ei() { interrupt.master = 1; printf("interrupts enabled\n"); }
+void ei() { interrupt.master = 1; }
 
 void push_af() { mmu_write_short_to_stack(registers.af); }
 void push_bc() { mmu_write_short_to_stack(registers.bc); }
@@ -873,7 +876,7 @@ void jr_z_n(unsigned char operand) {
 void cpl() { registers.a = ~registers.a; FLAGS_SET(FLAGS_NEGATIVE | FLAGS_HALFCARRY); }
 void scf() { FLAGS_SET(FLAGS_CARRY); FLAGS_CLEAR(FLAGS_NEGATIVE | FLAGS_HALFCARRY); }
 
-void daa(void) {
+void daa() {
 	{
 		unsigned short s = registers.a;
 		
@@ -894,4 +897,20 @@ void daa(void) {
 		
 		if(s >= 0x100) FLAGS_SET(FLAGS_CARRY);
 	}
+}
+
+void cpu_print_registers() {
+	printf("A: 0x%02x\n", registers.a);
+	printf("F: 0x%02x\n", registers.f);
+	printf("B: 0x%02x\n", registers.b);
+	printf("C: 0x%02x\n", registers.c);
+	printf("D: 0x%02x\n", registers.d);
+	printf("E: 0x%02x\n", registers.e);
+	printf("H: 0x%02x\n", registers.h);
+	printf("L: 0x%02x\n", registers.l);
+	printf("SP: 0x%04x\n", registers.sp);
+	printf("PC: 0x%04x\n", registers.pc);
+	printf("IME: 0x%02x\n", interrupt.master);
+	printf("IE: 0x%02x\n", interrupt.enable);
+	printf("IF: 0x%02x\n", interrupt.flags);
 }
