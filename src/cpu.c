@@ -19,23 +19,23 @@ const struct cpu_instruction cpu_instructions[256] = {
     { "INC B", 0, 2, inc_b },             
     { "DEC B", 0, 2, dec_b },
     { "LD B, d8", 1, 4, ld_b_n },
-    { "RLCA", 0, 4, cpu_unimplemented_instruction },
-    { "LD (a16), SP", 2, 10, cpu_unimplemented_instruction },
+    { "RLCA", 0, 4, rlca },
+    { "LD (a16), SP", 2, 10, ld_nnp_sp },
     { "ADD HL, BC", 0, 4, add_hl_bc },
     { "LD A, (BC)", 0, 4, ld_a_bcp },
     { "DEC BC", 0, 4, dec_bc },
     { "INC C", 0, 2, inc_c },
     { "DEC C", 0, 2, dec_c },
     { "LD C, d8", 1, 2, ld_c_n },
-    { "RRCA", 0, 4, cpu_unimplemented_instruction },                         
-    { "STOP", 1, 2, cpu_unimplemented_instruction },               // 0x10
+    { "RRCA", 0, 4, rrca },                         
+    { "STOP", 1, 2, stop },               // 0x10
     { "LD DE, d16", 2, 6, ld_de_nn },
     { "LD (DE), A", 0, 4, ld_dep_a },
     { "INC DE", 0, 4, inc_de },
     { "INC D", 0, 2, inc_d },
     { "DEC D", 0, 2, dec_d },
     { "LD D, d8", 1, 4, ld_d_n },
-    { "RLA", 0, 4, cpu_unimplemented_instruction },
+    { "RLA", 0, 4, rla },
     { "JR s8", 1, 10, jr_n },
     { "ADD HL, DE", 0, 4, add_hl_de },
     { "LD A, (DE)", 0, 4, ld_a_dep },
@@ -43,7 +43,7 @@ const struct cpu_instruction cpu_instructions[256] = {
     { "INC E", 0, 2, inc_e },
     { "DEC E", 0, 2, dec_e },
     { "LD E, d8", 1, 4, ld_d_n },
-    { "RRA", 0, 4, cpu_unimplemented_instruction },
+    { "RRA", 0, 4, rra },
     { "JR NZ, s8", 1, 2, jr_nz_n },          // 0x20
     { "LD HL, d16", 2, 6, ld_hl_nn },
     { "LD (HL+), A", 0, 4, ldi_hlp_a },
@@ -60,7 +60,7 @@ const struct cpu_instruction cpu_instructions[256] = {
     { "DEC L", 0, 2, dec_l },
     { "LD L, d8", 1, 4, ld_l_n },
     { "CPL", 0, 2, cpl },
-    { "JR NC, s8", 1, 4, cpu_unimplemented_instruction},          // 0x30
+    { "JR NC, s8", 1, 4, jr_nc_n},          // 0x30
     { "LD SP, d16", 2, 6, ld_sp_nn },
     { "LD (HL-), A", 0, 4, ldd_hlp_a },
     { "INC SP", 0, 4, inc_sp },
@@ -68,7 +68,7 @@ const struct cpu_instruction cpu_instructions[256] = {
     { "DEC (HL)", 0, 6, dec_hlp},
     { "LD (HL), d8", 1, 6, ld_hlp_n },
     { "SCF", 0, 2, scf },
-    { "JR C, s8", 1, 0, cpu_unimplemented_instruction },
+    { "JR C, s8", 1, 0, jr_c_n },
     { "ADD HL, SP", 0, 4, add_hl_sp },
     { "LD A, (HL-)", 0, 4, ldd_a_hlp },
     { "DEC SP", 0, 4, dec_sp },
@@ -130,7 +130,7 @@ const struct cpu_instruction cpu_instructions[256] = {
     { "LD (HL), E", 0, 4, ld_hlp_e },
     { "LD (HL), H", 0, 4, ld_hlp_h },
     { "LD (HL), L", 0, 4, ld_hlp_l },
-    { "HALT", 0, 2, cpu_unimplemented_instruction },
+    { "HALT", 0, 2, halt },
     { "LD (HL), A", 0, 4, ld_hlp_a },
     { "LD A, B", 0, 2, ld_a_b },
     { "LD A, C", 0, 2, ld_a_c },
@@ -148,37 +148,37 @@ const struct cpu_instruction cpu_instructions[256] = {
     { "ADD A, L", 0, 2, add_a_l },
     { "ADD A, (HL)", 0, 4, add_a_hlp },
     { "ADD A, A", 0, 2, add_a_a },
-    { "ADC A, B", 0, 2, cpu_unimplemented_instruction },
-    { "ADC A, C", 0, 2, cpu_unimplemented_instruction },
-    { "ADC A, D", 0, 2, cpu_unimplemented_instruction },
-    { "ADC A, E", 0, 2, cpu_unimplemented_instruction },
-    { "ADC A, H", 0, 2, cpu_unimplemented_instruction },
-    { "ADC A, L", 0, 2, cpu_unimplemented_instruction },
-    { "ADC A, (HL)", 0, 4, cpu_unimplemented_instruction },
-    { "ADC A, A", 0, 2, cpu_unimplemented_instruction },
-    { "SUB B", 0, 2, cpu_unimplemented_instruction },                  // 0x90
-    { "SUB C", 0, 2, cpu_unimplemented_instruction },
-    { "SUB D", 0, 2, cpu_unimplemented_instruction },
-    { "SUB E", 0, 2, cpu_unimplemented_instruction },
-    { "SUB H", 0, 2, cpu_unimplemented_instruction },
-    { "SUB L", 0, 2, cpu_unimplemented_instruction },
-    { "SUB (HL)", 0, 4, cpu_unimplemented_instruction },
-    { "SUB A", 0, 2, cpu_unimplemented_instruction },
-    { "SBC A, B", 0, 2, cpu_unimplemented_instruction },
-    { "SBC A, C", 0, 2, cpu_unimplemented_instruction },
-    { "SBC A, D", 0, 2, cpu_unimplemented_instruction },
-    { "SBC A, E", 0, 2, cpu_unimplemented_instruction },
-    { "SBC A, H", 0, 2, cpu_unimplemented_instruction },
-    { "SBC A, L", 0, 2, cpu_unimplemented_instruction },
-    { "SBC A, (HL)", 0, 4, cpu_unimplemented_instruction },
-    { "SBC A, A", 0, 2, cpu_unimplemented_instruction },
+    { "ADC A, B", 0, 2, adc_b },
+    { "ADC A, C", 0, 2, adc_c },
+    { "ADC A, D", 0, 2, adc_d },
+    { "ADC A, E", 0, 2, adc_e },
+    { "ADC A, H", 0, 2, adc_h },
+    { "ADC A, L", 0, 2, adc_l },
+    { "ADC A, (HL)", 0, 4, adc_hl },
+    { "ADC A, A", 0, 2, adc_a },
+    { "SUB B", 0, 2, sub_b },                  // 0x90
+    { "SUB C", 0, 2, sub_c },
+    { "SUB D", 0, 2, sub_d },
+    { "SUB E", 0, 2, sub_e },
+    { "SUB H", 0, 2, sub_h },
+    { "SUB L", 0, 2, sub_l },
+    { "SUB (HL)", 0, 4, sub_hl },
+    { "SUB A", 0, 2, sub_a },
+    { "SBC A, B", 0, 2, sbc_b },
+    { "SBC A, C", 0, 2, sbc_c },
+    { "SBC A, D", 0, 2, sbc_d },
+    { "SBC A, E", 0, 2, sbc_e },
+    { "SBC A, H", 0, 2, sbc_h },
+    { "SBC A, L", 0, 2, sbc_l },
+    { "SBC A, (HL)", 0, 4, sbc_hl },
+    { "SBC A, A", 0, 2, sbc_a },
     { "AND B", 0, 2, and_b },                   // 0xA0
     { "AND C", 0, 2, and_c },
     { "AND D", 0, 2, and_d },
     { "AND E", 0, 2, and_e },
     { "AND H", 0, 2, and_h },
     { "AND L", 0, 2, and_l },
-    { "AND (HL)", 0, 4, cpu_unimplemented_instruction },
+    { "AND (HL)", 0, 4, and_hl },
     { "AND A", 0, 2, and_a },
     { "XOR B", 0, 2, xor_b },
     { "XOR C", 0, 2, xor_c },
@@ -186,7 +186,7 @@ const struct cpu_instruction cpu_instructions[256] = {
     { "XOR E", 0, 2, xor_e },
     { "XOR H", 0, 2, xor_h },
     { "XOR L", 0, 2, xor_l },
-    { "XOR (HL)", 0, 4, cpu_unimplemented_instruction },
+    { "XOR (HL)", 0, 4, xor_hl },
     { "XOR A", 0, 2, xor_a },
     { "OR B", 0, 2, or_b },                    // 0xB0
     { "OR C", 0, 2, or_c },
@@ -194,48 +194,48 @@ const struct cpu_instruction cpu_instructions[256] = {
     { "OR E", 0, 2, or_e },
     { "OR H", 0, 2, or_h },
     { "OR L", 0, 2, or_l },
-    { "OR (HL)", 0, 4, cpu_unimplemented_instruction },
+    { "OR (HL)", 0, 4, or_hl },
     { "OR A", 0, 2, or_a },
-    { "CP B", 0, 2, cpu_unimplemented_instruction },
-    { "CP C", 0, 2, cpu_unimplemented_instruction },
-    { "CP D", 0, 2, cpu_unimplemented_instruction },
-    { "CP E", 0, 2, cpu_unimplemented_instruction },
-    { "CP H", 0, 2, cpu_unimplemented_instruction },
-    { "CP L", 0, 2, cpu_unimplemented_instruction },
-    { "CP (HL)", 0, 4, cpu_unimplemented_instruction },
-    { "CP A", 0, 2, cpu_unimplemented_instruction },
+    { "CP B", 0, 2, cp_b },
+    { "CP C", 0, 2, cp_c },
+    { "CP D", 0, 2, cp_d },
+    { "CP E", 0, 2, cp_e },
+    { "CP H", 0, 2, cp_h },
+    { "CP L", 0, 2, cp_l },
+    { "CP (HL)", 0, 4, cp_hl },
+    { "CP A", 0, 2, cp_a },
     { "RET NZ", 0, 0, ret_nz },                 // 0xC0
     { "POP BC", 0, 6, pop_bc },
     { "JP NZ, a16", 2, 0, jp_nz_nn },
     { "JP 0x%04X", 2, 6, jp_nn },
-    { "CALL NZ, a16", 2, 0, cpu_unimplemented_instruction },
+    { "CALL NZ, a16", 2, 0, call_nz_nn },
     { "PUSH BC", 0, 8, push_bc },
     { "ADD A, d8", 1, 4, add_a_n },
-    { "RST 0", 0, 8, cpu_unimplemented_instruction },
+    { "RST 0", 0, 8, rst_0 },
     { "RET Z", 0, 0, ret_z },
     { "RET", 0, 2, ret },
     { "JP Z, a16", 2, 0, jp_z_nn },
     { "0xCB Extended", 0, 0, cb_n },
-    { "CALL Z, a16", 2, 0, cpu_unimplemented_instruction },
+    { "CALL Z, a16", 2, 0, call_z_nn },
     { "CALL a16", 2, 6, call_nn },
-    { "ADC A, d8", 1, 4, cpu_unimplemented_instruction },
+    { "ADC A, d8", 1, 4, adc_n },
     { "RST 1", 0, 8, rst_1 },
     { "RET NC", 0, 0, ret_nc },                 // 0xD0
     { "POP DE", 0, 6, pop_de },
-    { "JP NC, a16", 2, 0, cpu_unimplemented_instruction },
+    { "JP NC, a16", 2, 0, jp_nc_nn },
     { "NULL (0xD3)", 0, 0, cpu_unimplemented_instruction },
-    { "CALL NC, a16", 2, 0, cpu_unimplemented_instruction },
+    { "CALL NC, a16", 2, 0, call_nc_nn },
     { "PUSH DE", 0, 8, push_de },
     { "SUB d8", 1, 4, sub_n },
-    { "RST 2", 0, 8, cpu_unimplemented_instruction },
+    { "RST 2", 0, 8, rst_2 },
     { "RET C", 0, 0, ret_c },
     { "RETI", 0, 8, interrupts_return },
-    { "JP C, a16", 2, 0, cpu_unimplemented_instruction },
+    { "JP C, a16", 2, 0, jp_c_nn },
     { "NULL (0xDB)", 0, 0, cpu_unimplemented_instruction },
-    { "CALL C", 2, 0, cpu_unimplemented_instruction },
+    { "CALL C", 2, 0, call_c_nn },
     { "NULL (0xDD)", 0, 0, cpu_unimplemented_instruction },
-    { "SBC A, d8", 1, 4, cpu_unimplemented_instruction },
-    { "RST 3", 0, 8, cpu_unimplemented_instruction },
+    { "SBC A, d8", 1, 4, sbc_n },
+    { "RST 3", 0, 8, rst_3 },
     { "LD (a8), A", 1, 6, ld_ff_n_ap },             // 0xE0
     { "POP HL", 0, 6, pop_hl },
     { "LD (C), A", 0, 4, ld_ff_c_a },
@@ -243,25 +243,25 @@ const struct cpu_instruction cpu_instructions[256] = {
     { "NULL (0xE4)", 0, 0, cpu_unimplemented_instruction },
     { "PUSH HL", 0, 8, push_hl },
     { "AND d8", 1, 4, and_n },
-    { "RST 4", 0, 8, cpu_unimplemented_instruction },
+    { "RST 4", 0, 8, rst_4 },
     { "ADD SP, s8", 1, 8, cpu_unimplemented_instruction },
     { "JP HL", 0, 2, jp_hl },
     { "LD (a16), A", 2, 8, ld_nnp_a },
     { "NULL (0xEB)", 0, 0, cpu_unimplemented_instruction },
     { "NULL (0xEC)", 0, 0, cpu_unimplemented_instruction },
     { "NULL (0xED)", 0, 0, cpu_unimplemented_instruction },
-    { "XOR d8", 1, 4, cpu_unimplemented_instruction },
+    { "XOR d8", 1, 4, xor_n },
     { "RST 5", 0, 8, rst_5 },
     { "LD A, (a8)", 1, 6, ld_ff_ap_n },              // 0xF0
     { "POP AF", 0, 6, pop_af },
-    { "LD A, (C)", 0, 4, cpu_unimplemented_instruction },
+    { "LD A, (C)", 0, 4, ld_a_ff_c },
     { "DI", 0, 0, di_inst },
     { "NULL (0xF4)", 0, 0, cpu_unimplemented_instruction },
     { "PUSH AF", 0, 8, push_af },
     { "OR d8", 1, 4, or_n },
-    { "RST 6", 0, 8, cpu_unimplemented_instruction },
-    { "LD HL, SP+s8", 1, 6, cpu_unimplemented_instruction },
-    { "LD SP, HL", 0, 4, cpu_unimplemented_instruction },
+    { "RST 6", 0, 8, rst_6 },
+    { "LD HL, SP+s8", 1, 6, ld_hl_sp_n },
+    { "LD SP, HL", 0, 4, ld_sp_hl },
     { "LD A, (a16)", 2, 8, ld_a_nnp },
     { "EI", 0, 2, ei },
     { "NULL (0xFC)", 0, 0, cpu_unimplemented_instruction },
@@ -572,6 +572,14 @@ void nop() { } //NOP
 
 void jp_nn(unsigned short operand) { registers.pc = operand; }
 
+void jp_c_nn(unsigned short operand) {
+	if(FLAGS_ISCARRY) {
+		registers.pc = operand;
+		cpu.ticks += 16;
+	}
+	else cpu.ticks += 12;
+}
+
 void jp_nz_nn(unsigned short operand) {
 	if(FLAGS_ISZERO) cpu.ticks += 12;
 	else {
@@ -584,9 +592,30 @@ void jr_n(unsigned char operand) {
 	registers.pc += (signed char)operand;
 }
 
+void jr_nc_n(char operand) {
+	if(FLAGS_ISCARRY) cpu.ticks += 8;
+	else {
+		registers.pc += operand;
+		cpu.ticks += 12;
+	}
+}
+
+void jr_c_n(char operand) {
+	if(FLAGS_ISCARRY) {
+		registers.pc += operand;
+		cpu.ticks += 12;
+	}
+	else cpu.ticks += 8;
+}
+
 //0xcf
+void rst_0() { mmu_write_short_to_stack(registers.pc); registers.pc = 0x0000; }
 void rst_1() { mmu_write_short_to_stack(registers.pc); registers.pc = 0x0008; }
+void rst_2() { mmu_write_short_to_stack(registers.pc); registers.pc = 0x0010; }
+void rst_3() { mmu_write_short_to_stack(registers.pc); registers.pc = 0x0018; }
+void rst_4() { mmu_write_short_to_stack(registers.pc); registers.pc = 0x0020; }
 void rst_5() { mmu_write_short_to_stack(registers.pc); registers.pc = 0x0028; }
+void rst_6() { mmu_write_short_to_stack(registers.pc); registers.pc = 0x0030; }
 void rst_7() { mmu_write_short_to_stack(registers.pc); registers.pc = 0x0038; }
 
 void inc_a() { registers.a = inc(registers.a); }
@@ -621,6 +650,8 @@ void dec_hlp() { mmu_write_byte(registers.hl, dec(mmu_read_byte(registers.hl)));
 void ldd_hlp_a() { mmu_write_byte(registers.hl, registers.a); registers.hl--; }
 void ldd_a_hlp() { registers.a = mmu_read_byte(registers.hl--); }
 void ld_nnp_a(unsigned short operand) { mmu_write_byte(operand, registers.a); }
+void ld_nnp_sp(unsigned short operand) { mmu_write_short(operand, registers.sp); }
+
 void ld_a_nnp(unsigned short operand) { registers.a = mmu_read_byte(operand); }
 
 void ld_hlp_b() { mmu_write_byte(registers.hl, registers.b); }
@@ -647,6 +678,7 @@ void ld_de_nn(unsigned short operand) { registers.de = operand; }
 void ld_hl_nn(unsigned short operand) { registers.hl = operand; }
 
 void ld_sp_nn(unsigned short operand) { registers.sp = operand; }
+void ld_sp_hl() { registers.sp = registers.hl; }
 
 void ld_hlp_n(unsigned char operand) { mmu_write_byte(registers.hl, operand); }
 
@@ -722,6 +754,7 @@ void xor_d() { xor(registers.d); }
 void xor_e() { xor(registers.e); }
 void xor_h() { xor(registers.h); }
 void xor_l() { xor(registers.l); }
+void xor_n(unsigned char operand) { xor(operand); }
 
 void or_a() { or(registers.a); }
 void or_b() { or(registers.b); }
@@ -740,6 +773,15 @@ void and_e() { and(registers.e); }
 void and_h() { and(registers.h); }
 void and_l() { and(registers.l); }
 
+void cp_a() { cp(registers.a); }
+void cp_b() { cp(registers.b); }
+void cp_c() { cp(registers.c); }
+void cp_d() { cp(registers.d); }
+void cp_e() { cp(registers.e); }
+void cp_h() { cp(registers.h); }
+void cp_l() { cp(registers.l); }
+void cp_hl() { cp(mmu_read_byte(registers.hl)); }
+
 void and_n(unsigned char operand) {
 	registers.a &= operand;
 	
@@ -753,10 +795,61 @@ void and_n(unsigned char operand) {
 // 0xf0
 void ld_ff_ap_n(unsigned char operand) { registers.a = mmu_read_byte(0xff00 + operand); }
 void ld_ff_n_ap(unsigned char operand) { mmu_write_byte(0xff00 + operand, registers.a); }
+void ld_a_ff_c() { registers.a = mmu_read_byte(0xff00 + registers.c); }
+
+void ld_hl_sp_n(unsigned char operand) {
+	int result = registers.sp + (signed char)operand;
+	
+	if(result & 0xffff0000) FLAGS_SET(FLAGS_CARRY);
+	else FLAGS_CLEAR(FLAGS_CARRY);
+	
+	if(((registers.sp & 0x0f) + (operand & 0x0f)) > 0x0f) FLAGS_SET(FLAGS_HALFCARRY);
+	else FLAGS_CLEAR(FLAGS_HALFCARRY);
+	
+	FLAGS_CLEAR(FLAGS_ZERO | FLAGS_NEGATIVE);
+	
+	registers.hl = (unsigned short)(result & 0xffff);
+}
 
 void ld_ff_c_a() { mmu_write_byte(0xff00 + registers.c, registers.a); }
 
-void call_nn(unsigned short operand) { mmu_write_short_to_stack(registers.pc); registers.pc = operand; }
+void call_nn(unsigned short operand) { mmu_write_short_to_stack(registers.pc); registers.pc = operand; 
+}
+void call_c_nn(unsigned short operand) {
+	if(FLAGS_ISCARRY) {
+		mmu_write_short_to_stack(registers.pc);
+		registers.pc = operand;
+		cpu.ticks += 24;
+	}
+	else cpu.ticks += 12;
+}
+
+void call_nc_nn(unsigned short operand) {
+	if(!FLAGS_ISCARRY) {
+		mmu_write_short_to_stack(registers.pc);
+		registers.pc = operand;
+		cpu.ticks += 24;
+	}
+	else cpu.ticks += 12;
+}
+
+void call_nz_nn(unsigned short operand) {
+	if(FLAGS_ISZERO) cpu.ticks += 12;
+	else {
+		mmu_write_short_to_stack(registers.pc);
+		registers.pc = operand;
+		cpu.ticks += 24;
+	}
+}
+
+void call_z_nn(unsigned short operand) {
+	if(FLAGS_ISZERO) {
+		mmu_write_short_to_stack(registers.pc);
+		registers.pc = operand;
+		cpu.ticks += 24;
+	}
+	else cpu.ticks += 12;
+}
 
 void add_a_a() { add(&registers.a, registers.a); }
 void add_a_b() { add(&registers.a, registers.b); }
@@ -773,7 +866,40 @@ void add_hl_de() { add2(&registers.hl, registers.de); }
 void add_hl_hl() { add2(&registers.hl, registers.hl); }
 void add_hl_sp() { add2(&registers.hl, registers.sp); }
 
+void adc_b() { adc(registers.b); }
+void adc_c() { adc(registers.c); }
+void adc_d() { adc(registers.d); }
+void adc_e() { adc(registers.e); }
+void adc_h() { adc(registers.h); }
+void adc_l() { adc(registers.l); }
+void adc_a() { adc(registers.a); }
+void adc_n(unsigned char operand) { adc(operand); }
+
+void adc_hl() { adc(mmu_read_byte(registers.hl)); }
+
 void sub_n(unsigned char operand) { sub(operand); }
+void sub_a() { sub(registers.a); }
+void sub_b() { sub(registers.b); }
+void sub_c() { sub(registers.c); }
+void sub_d() { sub(registers.d); }
+void sub_e() { sub(registers.e); }
+void sub_h() { sub(registers.h); }
+void sub_l() { sub(registers.l); }
+void sub_hl() { sub(mmu_read_byte(registers.hl)); }
+
+void sbc_a() { sbc(registers.a); }
+void sbc_b() { sbc(registers.b); }
+void sbc_c() { sbc(registers.c); }
+void sbc_d() { sbc(registers.d); }
+void sbc_e() { sbc(registers.e); }
+void sbc_h() { sbc(registers.h); }
+void sbc_l() { sbc(registers.l); }
+void sbc_hl() { sbc(mmu_read_byte(registers.hl)); }
+void sbc_n(unsigned char operand) { sbc(operand); }
+
+void and_hl() { and(mmu_read_byte(registers.hl)); }
+void or_hl() { and(mmu_read_byte(registers.hl)); }
+void xor_hl() { and(mmu_read_byte(registers.hl)); }
 
 void ccf() {
 	if(FLAGS_ISCARRY) FLAGS_CLEAR(FLAGS_CARRY);
@@ -792,6 +918,14 @@ void jr_nz_n(unsigned char operand) {
 
 void jp_hl() {
 	registers.pc = registers.hl;
+}
+
+void jp_nc_nn(unsigned short operand) {
+	if(!FLAGS_ISCARRY) {
+		registers.pc = operand;
+		cpu.ticks += 16;
+	}
+	else cpu.ticks += 12;
 }
 
 void jp_z_nn(unsigned short operand) {
@@ -897,6 +1031,61 @@ void daa() {
 		
 		if(s >= 0x100) FLAGS_SET(FLAGS_CARRY);
 	}
+}
+
+void rlca() {
+	unsigned char carry = (registers.a & 0x80) >> 7;
+	if(carry) FLAGS_SET(FLAGS_CARRY);
+	else FLAGS_CLEAR(FLAGS_CARRY);
+	
+	registers.a <<= 1;
+	registers.a += carry;
+	
+	FLAGS_CLEAR(FLAGS_NEGATIVE | FLAGS_ZERO | FLAGS_HALFCARRY);
+}
+
+void rrca() {
+	unsigned char carry = registers.a & 0x01;
+	if(carry) FLAGS_SET(FLAGS_CARRY);
+	else FLAGS_CLEAR(FLAGS_CARRY);
+	
+	registers.a >>= 1;
+	if(carry) registers.a |= 0x80;
+	
+	FLAGS_CLEAR(FLAGS_NEGATIVE | FLAGS_ZERO | FLAGS_HALFCARRY);
+}
+
+void stop() { cpu.stopped = true; }
+
+void halt() {
+	if(interrupt.master) {
+		//HALT EXECUTION UNTIL AN INTERRUPT OCCURS
+	}
+	else registers.pc++;
+}
+
+void rla() {
+	int carry = FLAGS_ISSET(FLAGS_CARRY) ? 1 : 0;
+	
+	if(registers.a & 0x80) FLAGS_SET(FLAGS_CARRY);
+	else FLAGS_CLEAR(FLAGS_CARRY);
+	
+	registers.a <<= 1;
+	registers.a += carry;
+	
+	FLAGS_CLEAR(FLAGS_NEGATIVE | FLAGS_ZERO | FLAGS_HALFCARRY);
+}
+
+void rra() {
+	int carry = (FLAGS_ISSET(FLAGS_CARRY) ? 1 : 0) << 7;
+	
+	if(registers.a & 0x01) FLAGS_SET(FLAGS_CARRY);
+	else FLAGS_CLEAR(FLAGS_CARRY);
+	
+	registers.a >>= 1;
+	registers.a += carry;
+	
+	FLAGS_CLEAR(FLAGS_NEGATIVE | FLAGS_ZERO | FLAGS_HALFCARRY);
 }
 
 void cpu_print_registers() {

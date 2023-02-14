@@ -27,6 +27,7 @@ void cpu_set_combined_registers(unsigned char high, unsigned char low);
 void cpu_emulate();
 void cpu_reset();
 void cpu_unimplemented_instruction();
+void cpu_print_registers();
 
 struct cpu {
     bool stopped;
@@ -58,7 +59,9 @@ void ld_hl_nn(unsigned short operand);
 
 void ld_hlp_n(unsigned char operand);
 void ld_nnp_a(unsigned short operand);
+void ld_nnp_sp(unsigned short operand);
 void ld_a_nnp(unsigned short operand);
+void ld_a_ff_c();
 
 void ld_sp_nn(unsigned short operand);
 
@@ -150,17 +153,29 @@ void ld_l_n(unsigned char operand);
 void ld_ff_ap_n(unsigned char operand);
 void ld_ff_n_ap(unsigned char operand);
 void ld_ff_c_a();
+void ld_hl_sp_n(unsigned char operand);
+void ld_sp_hl();
 
 void jp_nn(unsigned short operand);
+void jp_c_nn(unsigned short operand);
 void jp_nz_nn(unsigned short operand);
+void jp_nc_nn(unsigned short operand);
+
 void jp_hl();
 void jr_nz_n(unsigned char operand);
 void jr_z_n(unsigned char operand);
 void jp_z_nn(unsigned short operand);
 void jr_n(unsigned char operand);
+void jr_nc_n(char operand);
+void jr_c_n(char operand);
 
+void rst_0();
 void rst_1();
+void rst_2();
+void rst_3();
+void rst_4();
 void rst_5();
+void rst_6();
 void rst_7();
 
 void inc_a();
@@ -191,6 +206,10 @@ void dec_sp();
 void dec_hlp();
 
 void call_nn(unsigned short operand);
+void call_nc_nn(unsigned short operand);
+void call_nz_nn(unsigned short operand);
+void call_z_nn(unsigned short operand);
+void call_c_nn(unsigned short operand);
 
 void add_a_a();
 void add_a_b();
@@ -202,6 +221,25 @@ void add_a_l();
 void add_a_n(unsigned char operand);
 void add_a_hlp();
 
+void adc_b();
+void adc_c();
+void adc_d();
+void adc_e();
+void adc_h();
+void adc_l();
+void adc_a();
+void adc_hl();
+void adc_n(unsigned char operand);
+
+void cp_a();
+void cp_b();
+void cp_c();
+void cp_d();
+void cp_e();
+void cp_h();
+void cp_l();
+void cp_hl();
+
 
 void add_hl_bc();
 void add_hl_de();
@@ -210,6 +248,28 @@ void add_hl_sp();
 
 
 void sub_n(unsigned char operand);
+void sub_a();
+void sub_b();
+void sub_c();
+void sub_d();
+void sub_e();
+void sub_h();
+void sub_l();
+void sub_hl();
+
+void sbc_a();
+void sbc_b();
+void sbc_c();
+void sbc_d();
+void sbc_e();
+void sbc_h();
+void sbc_l();
+void sbc_hl();
+void sbc_n(unsigned char operand);
+
+void and_hl();
+void or_hl();
+void xor_hl();
 
 void ccf();
 void ret();
@@ -225,6 +285,7 @@ void xor_d();
 void xor_e();
 void xor_h();
 void xor_l();
+void xor_n(unsigned char operand);
 
 void or_a();
 void or_b();
@@ -262,3 +323,11 @@ void and_n(unsigned char operand);
 void cpl();
 void scf();
 void daa();
+
+void rlca();
+void rrca();
+void stop();
+void halt();
+
+void rla();
+void rra();
