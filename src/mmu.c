@@ -59,7 +59,7 @@ unsigned char mmu_read_byte(unsigned short address) {
     else if(address == 0xff40) return gpu.control;
 	else if(address == 0xff42) return gpu.scroll_y;
 	else if(address == 0xff43) return gpu.scroll_x;
-	else if(address == 0xff44) return gpu.scanline;
+	else if(address == 0xff44) return 0x90;//gpu.scanline - fix this for graphics in future, using gameboy doctor;
     else if(address == 0xFF00) {
 		if(!(mmu.io[0x00] & 0x20)) {
 			return (unsigned char)(0xc0 | keys.keys1 | 0x10);
@@ -89,7 +89,7 @@ unsigned short mmu_read_short(unsigned short address) {
     return mmu_read_byte(address) | (mmu_read_byte(address + 1) << 8);
 }
 
-unsigned short mmu_read_short_from_stack(void) {
+unsigned short mmu_read_short_from_stack() {
     unsigned short value = mmu_read_short(registers.sp);
     registers.sp += 2;
     return value;

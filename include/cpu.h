@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <stdio.h>
 #include <stdbool.h>
 
 #include "platform.h"
@@ -19,7 +20,13 @@
 #define FLAGS_SET(x) (registers.f |= (x))
 #define FLAGS_CLEAR(x) (registers.f &= ~(x))
 
+#define CHECK_BIT(var, pos) ((var) & (1 << (pos)))
+#define SET_BIT(var, pos) ((var) |= (1 << (pos)))
+#define RESET_BIT(var, pos) ((var) &= ~(1 << (pos)))
+
 #define CPU_CLOCKSPEED 4194304;
+
+extern FILE *pFile;
 
 unsigned short cpu_get_combined_registers(unsigned char high, unsigned char low);
 unsigned char cpu_compile_flag_register();
@@ -39,6 +46,7 @@ struct cpu {
     bool flag_half_carry;
     bool flag_carry;
     bool debug_key;
+    bool debug_mode;
     unsigned short last_instruction;
 } extern cpu;
 
@@ -245,6 +253,8 @@ void add_hl_bc();
 void add_hl_de();
 void add_hl_hl();
 void add_hl_sp();
+
+void add_sp_n(char operand);
 
 
 void sub_n(unsigned char operand);

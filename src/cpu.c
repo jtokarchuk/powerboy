@@ -10,6 +10,7 @@
 #include "keys.h"
 
 struct cpu cpu;
+FILE *pFile;
 
 const struct cpu_instruction cpu_instructions[256] = {
     { "NOP", 0, 2, nop },                // 0x00
@@ -42,7 +43,7 @@ const struct cpu_instruction cpu_instructions[256] = {
     { "DEC DE", 0, 4, dec_de },
     { "INC E", 0, 2, inc_e },
     { "DEC E", 0, 2, dec_e },
-    { "LD E, d8", 1, 4, ld_d_n },
+    { "LD E, d8", 1, 4, ld_e_n },
     { "RRA", 0, 4, rra },
     { "JR NZ, s8", 1, 2, jr_nz_n },          // 0x20
     { "LD HL, d16", 2, 6, ld_hl_nn },
@@ -215,7 +216,7 @@ const struct cpu_instruction cpu_instructions[256] = {
     { "RET Z", 0, 0, ret_z },
     { "RET", 0, 2, ret },
     { "JP Z, a16", 2, 0, jp_z_nn },
-    { "0xCB Extended", 0, 0, cb_n },
+    { "PREFIX CB", 0, 0, cb_n },
     { "CALL Z, a16", 2, 0, call_z_nn },
     { "CALL a16", 2, 6, call_nn },
     { "ADC A, d8", 1, 4, adc_n },
@@ -244,7 +245,7 @@ const struct cpu_instruction cpu_instructions[256] = {
     { "PUSH HL", 0, 8, push_hl },
     { "AND d8", 1, 4, and_n },
     { "RST 4", 0, 8, rst_4 },
-    { "ADD SP, s8", 1, 8, cpu_unimplemented_instruction },
+    { "ADD SP, s8", 1, 8, add_sp_n },
     { "JP HL", 0, 2, jp_hl },
     { "LD (a16), A", 2, 8, ld_nnp_a },
     { "NULL (0xEB)", 0, 0, cpu_unimplemented_instruction },
@@ -284,16 +285,17 @@ void cpu_reset() {
     cpu.emulation_speed = 1;
     cpu.ticks = 0;
     cpu.debug_key = false;
+    cpu.debug_mode = true;
 
     registers.a = 0x01;
-    registers.f = 0xb0;
+    registers.f = 0xB0;
     registers.b = 0x00;
     registers.c = 0x13;
     registers.d = 0x00;
-    registers.e = 0xd8;
+    registers.e = 0xD8;
     registers.h = 0x01;
-    registers.l = 0x4d;
-    registers.sp = 0xfffe;
+    registers.l = 0x4D;
+    registers.sp = 0xFFFE;
     registers.pc = 0x100;
 
     interrupt.master = 1;
@@ -329,6 +331,7 @@ void cpu_reset() {
 	keys.left = 1;
 	keys.up = 1;
 	keys.down = 1;
+    pFile = fopen("./cpu_log.txt", "a");
 
     memset(gpu_tiles, 0, sizeof(gpu_tiles));
 	memset(display_framebuffer, 255, sizeof(display_framebuffer));
@@ -368,7 +371,9 @@ void cpu_reset() {
 }
 
 void cpu_emulate() {
-   cpu.instruction = 0;
+    if (cpu.stopped) return;
+
+    cpu.instruction = 0;
     unsigned short operand = 0;
     
     cpu.instruction = mmu_read_byte(registers.pc++);
@@ -377,13 +382,17 @@ void cpu_emulate() {
     if(cpu_instructions[cpu.instruction].length == 1) operand = (unsigned short)mmu_read_byte(registers.pc);
     if(cpu_instructions[cpu.instruction].length == 2) operand = mmu_read_short(registers.pc); 
 
-    //if (cpu.debug_key == true) {
-    //    printf("[Address]: 0x%04x\t[Operand]: 0x%04x\t[Opcode]: 0x%02x: %s\n", registers.pc - 1,  operand, cpu.instruction, cpu_instructions[cpu.instruction].mnemonic);
-    //}
-
-    if (registers.pc - 1 == 0x2f0 && cpu.debug_key) {
-        cpu_print_registers();
+    
+    //    blarggs test - serial output
+    if (mmu_read_byte(0xFF02) == 0x81) {
+        char c = mmu_read_byte(0xFF01);
+        printf("%c", c);
+        mmu_write_byte(0xFF02, 0x0);
     }
+
+    //if (registers.pc - 1 == 0x2f0 && cpu.debug_key) {
+    //    cpu_print_registers();
+   // }
 
     registers.pc += cpu_instructions[cpu.instruction].length;
     
@@ -430,8 +439,8 @@ static unsigned char inc(unsigned char value) {
 }
 
 static unsigned char dec(unsigned char value) {
-	if(value & 0x0f) FLAGS_CLEAR(FLAGS_HALFCARRY);
-	else FLAGS_SET(FLAGS_HALFCARRY);
+	if((value & 0x0f) == 0x00) FLAGS_SET(FLAGS_HALFCARRY);
+	else FLAGS_CLEAR(FLAGS_HALFCARRY);
 	
 	value--;
 	
@@ -444,20 +453,32 @@ static unsigned char dec(unsigned char value) {
 }
 
 static void add(unsigned char *destination, unsigned char value) {
-	unsigned int result = *destination + value;
 	
-	if(result & 0xff00) FLAGS_SET(FLAGS_CARRY);
-	else FLAGS_CLEAR(FLAGS_CARRY);
+    if ((*destination + value) & 0xFF) {
+        FLAGS_CLEAR(FLAGS_ZERO);
+    }
+    else {
+        FLAGS_SET(FLAGS_ZERO);
+    }
+
+    FLAGS_CLEAR(FLAGS_NEGATIVE);
+
+    if (((*destination & 0x0F) + (value & 0x0F)) > 0x0F) {
+        FLAGS_SET(FLAGS_HALFCARRY);
+    }
+    else {
+        FLAGS_CLEAR(FLAGS_HALFCARRY);
+    }
+
+    if((*destination + value) > 0xFF) {
+        FLAGS_SET(FLAGS_CARRY);
+    }
+    else {
+        FLAGS_CLEAR(FLAGS_CARRY);
+    }
+
+    *destination = *destination + value;
 	
-	*destination = (unsigned char)(result & 0xff);
-	
-	if(*destination) FLAGS_CLEAR(FLAGS_ZERO);
-	else FLAGS_SET(FLAGS_ZERO);
-	
-	if(((*destination & 0x0f) + (value & 0x0f)) > 0x0f) FLAGS_SET(FLAGS_HALFCARRY);
-	else FLAGS_CLEAR(FLAGS_HALFCARRY);
-	
-	FLAGS_CLEAR(FLAGS_NEGATIVE);
 }
 
 static void add2(unsigned short *destination, unsigned short value) {
@@ -465,51 +486,48 @@ static void add2(unsigned short *destination, unsigned short value) {
 	
 	if(result & 0xffff0000) FLAGS_SET(FLAGS_CARRY);
 	else FLAGS_CLEAR(FLAGS_CARRY);
-	
-	*destination = (unsigned short)(result & 0xffff);
-	
-	if(((*destination & 0x0f) + (value & 0x0f)) > 0x0f) FLAGS_SET(FLAGS_HALFCARRY);
+		
+	if((((*destination & 0x0fff) + (value & 0x0fff)) & 0x1000) == 0x1000) FLAGS_SET(FLAGS_HALFCARRY);
 	else FLAGS_CLEAR(FLAGS_HALFCARRY);
 	
+    *destination = (unsigned short)(result & 0xffff);
 	// zero flag left alone
 	
 	FLAGS_CLEAR(FLAGS_NEGATIVE);
 }
 
 static void adc(unsigned char value) {
-	value += FLAGS_ISCARRY ? 1 : 0;
+    int carry = FLAGS_ISCARRY ? 1 : 0;
 	
-	int result = registers.a + value;
+	int result = registers.a + value + carry;
 	
 	if(result & 0xff00) FLAGS_SET(FLAGS_CARRY);
 	else FLAGS_CLEAR(FLAGS_CARRY);
 	
-	if(value == registers.a) FLAGS_SET(FLAGS_ZERO);
-	else FLAGS_CLEAR(FLAGS_ZERO);
-	
-	if(((value & 0x0f) + (registers.a & 0x0f)) > 0x0f) FLAGS_SET(FLAGS_HALFCARRY);
+	if((((registers.a & 0x0f) + (value & 0x0f) + carry) & 0x10) == 0x10) FLAGS_SET(FLAGS_HALFCARRY);
 	else FLAGS_CLEAR(FLAGS_HALFCARRY);
 	
-	FLAGS_SET(FLAGS_NEGATIVE);
+	FLAGS_CLEAR(FLAGS_NEGATIVE);
 	
 	registers.a = (unsigned char)(result & 0xff);
+    if(registers.a) FLAGS_CLEAR(FLAGS_ZERO);
+    else FLAGS_SET(FLAGS_ZERO);
+
 }
 
 static void sbc(unsigned char value) {
-	value += FLAGS_ISCARRY ? 1 : 0;
+    int carry = FLAGS_ISCARRY ? 1 : 0;
 	
-	FLAGS_SET(FLAGS_NEGATIVE);
-	
-	if(value > registers.a) FLAGS_SET(FLAGS_CARRY);
-	else FLAGS_CLEAR(FLAGS_CARRY);
-	
-	if(value == registers.a) FLAGS_SET(FLAGS_ZERO);
-	else FLAGS_CLEAR(FLAGS_ZERO);
-	
-	if((value & 0x0f) > (registers.a & 0x0f)) FLAGS_SET(FLAGS_HALFCARRY);
-	else FLAGS_CLEAR(FLAGS_HALFCARRY);
-	
-	registers.a -= value;
+    if (value + carry > registers.a) FLAGS_SET(FLAGS_CARRY);
+    else FLAGS_CLEAR(FLAGS_CARRY);
+
+    if (((value & 0x0F) + carry) > (registers.a & 0x0F)) FLAGS_SET(FLAGS_HALFCARRY);
+    else FLAGS_CLEAR (FLAGS_HALFCARRY);
+
+	registers.a -= value + carry;
+    if(registers.a == 0) FLAGS_SET(FLAGS_ZERO);
+    else FLAGS_CLEAR(FLAGS_ZERO);
+    FLAGS_SET(FLAGS_NEGATIVE);
 }
 
 static void sub(unsigned char value) {
@@ -652,7 +670,9 @@ void ldd_a_hlp() { registers.a = mmu_read_byte(registers.hl--); }
 void ld_nnp_a(unsigned short operand) { mmu_write_byte(operand, registers.a); }
 void ld_nnp_sp(unsigned short operand) { mmu_write_short(operand, registers.sp); }
 
-void ld_a_nnp(unsigned short operand) { registers.a = mmu_read_byte(operand); }
+void ld_a_nnp(unsigned short operand) { 
+    registers.a = mmu_read_byte(operand); 
+}
 
 void ld_hlp_b() { mmu_write_byte(registers.hl, registers.b); }
 void ld_hlp_c() { mmu_write_byte(registers.hl, registers.c); }
@@ -683,7 +703,9 @@ void ld_sp_hl() { registers.sp = registers.hl; }
 void ld_hlp_n(unsigned char operand) { mmu_write_byte(registers.hl, operand); }
 
 void ldi_hlp_a() { mmu_write_byte(registers.hl++, registers.a); }
-void ldi_a_hlp() { registers.a = mmu_read_byte(registers.hl++); }
+void ldi_a_hlp() { 
+    registers.a = mmu_read_byte(registers.hl++); 
+}
 
 void ld_a_bcp() { registers.a = mmu_read_byte(registers.bc); }
 void ld_a_dep() { registers.a = mmu_read_byte(registers.de); }
@@ -791,20 +813,20 @@ void and_n(unsigned char operand) {
 	else FLAGS_SET(FLAGS_ZERO);
 }
 
-
-// 0xf0
-void ld_ff_ap_n(unsigned char operand) { registers.a = mmu_read_byte(0xff00 + operand); }
-void ld_ff_n_ap(unsigned char operand) { mmu_write_byte(0xff00 + operand, registers.a); }
+void ld_ff_ap_n(unsigned char operand) { 
+    registers.a = mmu_read_byte(0xff00 + operand); 
+}
+void ld_ff_n_ap(unsigned char operand) { mmu_write_byte((0xff00 + operand), registers.a); }
 void ld_a_ff_c() { registers.a = mmu_read_byte(0xff00 + registers.c); }
 
 void ld_hl_sp_n(unsigned char operand) {
 	int result = registers.sp + (signed char)operand;
 	
-	if(result & 0xffff0000) FLAGS_SET(FLAGS_CARRY);
-	else FLAGS_CLEAR(FLAGS_CARRY);
+	if((((registers.sp & 0xFF) + (operand & 0xFF)) & 0x100) == 0x100) FLAGS_SET(FLAGS_CARRY);
+    else FLAGS_CLEAR (FLAGS_CARRY);
 	
-	if(((registers.sp & 0x0f) + (operand & 0x0f)) > 0x0f) FLAGS_SET(FLAGS_HALFCARRY);
-	else FLAGS_CLEAR(FLAGS_HALFCARRY);
+	if((((registers.sp & 0x0F) + (operand & 0x0F)) & 0x10) == 0x10) FLAGS_SET(FLAGS_HALFCARRY);
+    else FLAGS_CLEAR (FLAGS_HALFCARRY);
 	
 	FLAGS_CLEAR(FLAGS_ZERO | FLAGS_NEGATIVE);
 	
@@ -866,6 +888,24 @@ void add_hl_de() { add2(&registers.hl, registers.de); }
 void add_hl_hl() { add2(&registers.hl, registers.hl); }
 void add_hl_sp() { add2(&registers.hl, registers.sp); }
 
+void add_sp_n(char operand) {
+	int result = registers.sp + operand;
+	
+	if((((registers.sp & 0xFF) + (operand & 0xFF)) & 0x100) == 0x100) FLAGS_SET(FLAGS_CARRY);
+    else FLAGS_CLEAR(FLAGS_CARRY);
+
+    if((((registers.sp & 0x0F) + (operand & 0x0F)) & 0x10) == 0x10) FLAGS_SET(FLAGS_HALFCARRY);
+    else FLAGS_CLEAR(FLAGS_HALFCARRY);
+
+	if(((registers.sp & 0x0f) + (operand & 0x0f)) > 0x0f) FLAGS_SET(FLAGS_HALFCARRY);
+	else FLAGS_CLEAR(FLAGS_HALFCARRY);
+
+    registers.sp = result & 0xffff;
+	
+	// _does_ clear the zero flag
+	FLAGS_CLEAR(FLAGS_ZERO | FLAGS_NEGATIVE);
+}
+
 void adc_b() { adc(registers.b); }
 void adc_c() { adc(registers.c); }
 void adc_d() { adc(registers.d); }
@@ -898,8 +938,8 @@ void sbc_hl() { sbc(mmu_read_byte(registers.hl)); }
 void sbc_n(unsigned char operand) { sbc(operand); }
 
 void and_hl() { and(mmu_read_byte(registers.hl)); }
-void or_hl() { and(mmu_read_byte(registers.hl)); }
-void xor_hl() { and(mmu_read_byte(registers.hl)); }
+void or_hl() { or(mmu_read_byte(registers.hl)); }
+void xor_hl() { xor(mmu_read_byte(registers.hl)); }
 
 void ccf() {
 	if(FLAGS_ISCARRY) FLAGS_CLEAR(FLAGS_CARRY);
@@ -992,7 +1032,10 @@ void push_bc() { mmu_write_short_to_stack(registers.bc); }
 void push_de() { mmu_write_short_to_stack(registers.de); }
 void push_hl() { mmu_write_short_to_stack(registers.hl); }
 
-void pop_af() { registers.af = mmu_read_short_from_stack(); }
+void pop_af() { 
+        registers.af = mmu_read_short_from_stack();
+        registers.f = registers.f & 0xF0;
+    }
 void pop_bc() { registers.bc = mmu_read_short_from_stack(); }
 void pop_de() { registers.de = mmu_read_short_from_stack(); }
 void pop_hl() { registers.hl = mmu_read_short_from_stack(); }
@@ -1012,24 +1055,29 @@ void scf() { FLAGS_SET(FLAGS_CARRY); FLAGS_CLEAR(FLAGS_NEGATIVE | FLAGS_HALFCARR
 
 void daa() {
 	{
-		unsigned short s = registers.a;
+		int s = registers.a;
 		
-		if(FLAGS_ISNEGATIVE) {
-			if(FLAGS_ISHALFCARRY) s = (s - 0x06)&0xFF;
-			if(FLAGS_ISCARRY) s -= 0x60;
+		if(FLAGS_ISSET(FLAGS_NEGATIVE)) {
+			if(FLAGS_ISSET(FLAGS_HALFCARRY)) s = (s - 0x06)&0xFF;
+			if(FLAGS_ISSET(FLAGS_CARRY)) s -= 0x60;
 		}
 		else {
-			if(FLAGS_ISHALFCARRY || (s & 0xF) > 9) s += 0x06;
-			if(FLAGS_ISCARRY || s > 0x9F) s += 0x60;
+			if(FLAGS_ISSET(FLAGS_HALFCARRY) || (s & 0xF) > 9) s += 0x06;
+			if(FLAGS_ISSET(FLAGS_CARRY) || s > 0x9F) s += 0x60;
 		}
 		
-		registers.a = s;
 		FLAGS_CLEAR(FLAGS_HALFCARRY);
+        FLAGS_CLEAR(FLAGS_ZERO);
 		
-		if(registers.a) FLAGS_CLEAR(FLAGS_ZERO);
-		else FLAGS_SET(FLAGS_ZERO);
+		if((s & 0x100) == 0x100) {
+            FLAGS_SET(FLAGS_CARRY);
+        } 
 		
-		if(s >= 0x100) FLAGS_SET(FLAGS_CARRY);
+        s &= 0xFF;
+
+        registers.a = s;
+        if (registers.a == 0) FLAGS_SET(FLAGS_ZERO);
+
 	}
 }
 
@@ -1058,7 +1106,7 @@ void rrca() {
 void stop() { cpu.stopped = true; }
 
 void halt() {
-	if(interrupt.master) {
+	if(interrupt.flags || interrupt.enable > 0) {
 		//HALT EXECUTION UNTIL AN INTERRUPT OCCURS
 	}
 	else registers.pc++;

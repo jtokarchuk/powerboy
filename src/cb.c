@@ -269,6 +269,7 @@ struct cb_instruction cb_instructions[256] = {
 
 
 void cb_n(unsigned char instruction) {
+	instruction = mmu_read_byte(registers.pc++);
 	cb_instructions[instruction].execute();
 	cpu.ticks += cb_instructions[instruction].cycles;
 }
@@ -327,17 +328,35 @@ static unsigned char rl(unsigned char value) {
 }
 
 static unsigned char rr(unsigned char value) {
+	
+	int carry = FLAGS_ISSET(FLAGS_CARRY) ? 1 : 0;
+
+	if(value & 0x01) {
+		FLAGS_SET(FLAGS_CARRY);
+	}
+	else {
+		FLAGS_CLEAR(FLAGS_CARRY);
+	} 
+	//printf("value before: %02x\n", value);
 	value >>= 1;
-	if(FLAGS_ISCARRY) value |= 0x80;
+	//printf("value after but before carry: %02x\n", value);
+	//printf("Carry is: %02d\n", carry);
+	if(carry) {
+		SET_BIT((value), 7);
+	} 
+	else {
+		RESET_BIT((value), 7);
+	}
 	
-	if(value & 0x01) FLAGS_SET(FLAGS_CARRY);
-	else FLAGS_CLEAR(FLAGS_CARRY);
-	
-	if(value) FLAGS_CLEAR(FLAGS_ZERO);
-	else FLAGS_SET(FLAGS_ZERO);
-	
+	//printf("value after carry: %02x\n\n", value);
+
+	if(value) { 
+		FLAGS_CLEAR(FLAGS_ZERO);
+	}
+	else {
+		FLAGS_SET(FLAGS_ZERO);
+	}
 	FLAGS_CLEAR(FLAGS_NEGATIVE | FLAGS_HALFCARRY);
-	
 	return value;
 }
 
@@ -356,16 +375,22 @@ static unsigned char sla(unsigned char value) {
 }
 
 static unsigned char sra(unsigned char value) {
-	if(value & 0x01) FLAGS_SET(FLAGS_CARRY);
-	else FLAGS_CLEAR(FLAGS_CARRY);
+	int msb = value & 0x80;
+
+	if (value & 0x01) {
+		FLAGS_SET(FLAGS_CARRY);
+	} 
+	else {
+		FLAGS_CLEAR(FLAGS_CARRY);
+	}
+
+	value >>=1;
+	value |= msb;
 	
-	value = (value & 0x80) | (value >> 1);
-	
-	if(value) FLAGS_CLEAR(FLAGS_ZERO);
+	if (value) FLAGS_CLEAR(FLAGS_ZERO);
 	else FLAGS_SET(FLAGS_ZERO);
 	
 	FLAGS_CLEAR(FLAGS_NEGATIVE | FLAGS_HALFCARRY);
-	
 	return value;
 }
 
@@ -546,7 +571,10 @@ void sra_h() { registers.h = sra(registers.h); }
 void sra_l() { registers.l = sra(registers.l); }
 
 // 0x2e
-void sra_hlp() { mmu_write_byte(registers.hl, sra(registers.hl)); }
+void sra_hlp() { 
+	unsigned char value = mmu_read_byte(registers.hl);
+	value = sra(value); 
+	mmu_write_byte(registers.hl, value); }
 
 // 0x2f
 void sra_a() { registers.a = sra(registers.a); }
