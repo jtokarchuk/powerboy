@@ -16,7 +16,4 @@
             "binaryArgs": []
         }
     ],
-    "files.associations": {
-        "registers.h": "c"
-    },
 }

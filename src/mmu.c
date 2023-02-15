@@ -4,6 +4,7 @@
 #include "interrupts.h"
 #include "gpu.h"
 #include "keys.h"
+#include "timer.h"
 
 struct mmu mmu;
 
@@ -34,6 +35,7 @@ void mmu_copy(unsigned short destination, unsigned short source, size_t length) 
 }
 
 unsigned char mmu_read_byte(unsigned short address) {
+	cpu.ticks += 3;
     if (address <= 0x7FFF) {
         return mmu.cartridge[address];
     }
@@ -52,14 +54,13 @@ unsigned char mmu_read_byte(unsigned short address) {
     else if (address >= 0xFE00 && address <= 0xFEFF) {
         return mmu.oam[address - 0xFE00];
     }
-    // Timer, should return div timer instead of rand()
     else if(address == 0xFF04) {
-        return (unsigned char)rand();
+        return mmu.io[address - 0xFF00];
     }
     else if(address == 0xff40) return gpu.control;
 	else if(address == 0xff42) return gpu.scroll_y;
 	else if(address == 0xff43) return gpu.scroll_x;
-	else if(address == 0xff44) return 0x90;//gpu.scanline - fix this for graphics in future, using gameboy doctor;
+	else if(address == 0xff44) return gpu.scanline;
     else if(address == 0xFF00) {
 		if(!(mmu.io[0x00] & 0x20)) {
 			return (unsigned char)(0xc0 | keys.keys1 | 0x10);
@@ -96,6 +97,8 @@ unsigned short mmu_read_short_from_stack() {
 }
 
 void mmu_write_byte(unsigned short address, unsigned char value) {
+	cpu.ticks += 3;
+
     if(address >= 0xA000 && address <= 0xbFFF)
 		mmu.sram[address - 0xA000] = value;
 	
@@ -135,13 +138,33 @@ void mmu_write_byte(unsigned short address, unsigned char value) {
 		int i;
 		for(i = 0; i < 4; i++) gpu_sprite_palette[1][i] = display_palette[(value >> (i * 2)) & 3];
 	}
+	else if (address == 0xFF04) { // Timer write resets it to 0
+		mmu.io[address - 0xFF00] = 0;
+		timer_dividercounter = 0;
+	}
+	else if (address == 0xFF07) {
+		mmu.io[address - 0xFF00] = value;
+		int clock_speed_value = value & 0x03;
+		int clock_speed = 0;
+
+		switch(clock_speed_value) {
+			case 0: clock_speed = 1024; break;
+			case 1: clock_speed = 16; break;
+			case 2: clock_speed = 64; break;
+			case 3: clock_speed = 256; break;
+			default: printf("Timer error! Attempt to use clock speed %04d", clock_speed); break;
+		}
+		if (clock_speed > timer_frequency) {
+			timer_frequency = clock_speed;
+		}
+	}
+	else if(address == 0xff0f) {
+		interrupt.flags = value; 
+	}
 	else if(address >= 0xff00 && address <= 0xff7f) {
 		mmu.io[address - 0xff00] = value;
 	}
 	
-	else if(address == 0xff0f) {
-		interrupt.flags = value; 
-	}
 	else if(address == 0xffff) {
 		interrupt.enable = value; 
 	}

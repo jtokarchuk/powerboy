@@ -30,7 +30,7 @@ void interrupts_emulate() {
 			interrupts_serial();
 		}
 		
-		if(fire & INTERRUPTS_JOYPAD) {
+		if(fire & INTERRUPTS_JOYPAD) {			
 			interrupt.flags &= ~INTERRUPTS_JOYPAD;
 			interrupts_joypad();
 		}
@@ -57,7 +57,6 @@ void interrupts_timer() {
 	interrupt.master = 0;
 	mmu_write_short_to_stack(registers.pc);
 	registers.pc = 0x50;
-	
 	cpu.ticks += 12;
 }
 

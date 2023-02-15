@@ -41,6 +41,7 @@ struct cpu {
     unsigned short instruction;
     float emulation_speed;
     int ticks;
+    int last_ticks;
     bool flag_zero;
     bool flag_subtract;
     bool flag_half_carry;

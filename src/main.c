@@ -10,6 +10,7 @@
 #include "rom.h"
 #include "keys.h"
 #include "registers.h"
+#include "timer.h"
 
 bool application_closing = false;
 
@@ -25,6 +26,7 @@ int main(int argc, char *argv[]) {
 	}
     
     cpu_reset();
+    timer_reset();
 
     if (!gpu_init()) {
         printf("Failed to initialize GPU, exitting\n");
@@ -148,16 +150,22 @@ int main(int argc, char *argv[]) {
             }
         }
 
+      // Gameboy-Doctor Printout  
+        fprintf(pFile, "A:%02hX F:%02hX B:%02hX C:%02hX D:%02hX E:%02hX H:%02hX L:%02hX SP:%04hX PC:%04hX PCMEM:%02hX,%02hX,%02hX,%02hX\n", \
+                registers.a, registers.f, registers.b, registers.c, registers.d, registers.e, registers.h, registers.l, registers.sp, \
+                registers.pc, mmu_read_byte(registers.pc), mmu_read_byte(registers.pc + 1), mmu_read_byte(registers.pc + 2), mmu_read_byte(registers.pc + 3));
+      
+        
+        
+        timer_emulate(cpu.ticks - cpu.last_ticks);
+        interrupts_emulate();
         if (!cpu.stopped) {
-                fprintf(pFile, "A:%02hX F:%02hX B:%02hX C:%02hX D:%02hX E:%02hX H:%02hX L:%02hX SP:%04hX PC:%04hX PCMEM:%02hX,%02hX,%02hX,%02hX\n", \
-        registers.a, registers.f, registers.b, registers.c, registers.d, registers.e, registers.h, registers.l, registers.sp, \
-        registers.pc, mmu_read_byte(registers.pc), mmu_read_byte(registers.pc + 1), mmu_read_byte(registers.pc + 2), mmu_read_byte(registers.pc + 3));
             cpu_emulate();
-            gpu_emulate();
-            interrupts_emulate();
         }
-    
-
+        
+        gpu_emulate();
+        
+        
     }
     
     gpu_exit();
