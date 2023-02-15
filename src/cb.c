@@ -872,7 +872,11 @@ void res_1_h() { registers.h &= ~(1 << 1); }
 void res_1_l() { registers.l &= ~(1 << 1); }
 
 // 0x8e
-void res_1_hlp() { mmu_write_byte(registers.hl, registers.hl & ~(1 << 1)); }
+void res_1_hlp() { 
+	unsigned char value = mmu_read_byte(registers.hl);
+	RESET_BIT(value, 1);
+	mmu_write_byte(registers.hl, value); 
+}
 
 // 0x8f
 void res_1_a() { registers.a &= ~(1 << 1); }
@@ -896,7 +900,11 @@ void res_2_h() { registers.h &= ~(1 << 2); }
 void res_2_l() { registers.l &= ~(1 << 2); }
 
 // 0x96
-void res_2_hlp() { mmu_write_byte(registers.hl, registers.hl & ~(1 << 2)); }
+void res_2_hlp() { 
+	unsigned char value = mmu_read_byte(registers.hl);
+	RESET_BIT(value, 2);
+	mmu_write_byte(registers.hl, value); 
+}
 
 // 0x97
 void res_2_a() { registers.a &= ~(1 << 2); }
@@ -920,7 +928,11 @@ void res_3_h() { registers.h &= ~(1 << 3); }
 void res_3_l() { registers.l &= ~(1 << 3); }
 
 // 0x9e
-void res_3_hlp() { mmu_write_byte(registers.hl, registers.hl & ~(1 << 3)); }
+void res_3_hlp() {
+	unsigned char value = mmu_read_byte(registers.hl);
+	RESET_BIT(value, 3); 
+	mmu_write_byte(registers.hl, value); 
+}
 
 // 0x9f
 void res_3_a() { registers.a &= ~(1 << 3); }
@@ -944,7 +956,11 @@ void res_4_h() { registers.h &= ~(1 << 4); }
 void res_4_l() { registers.l &= ~(1 << 4); }
 
 // 0xa6
-void res_4_hlp() { mmu_write_byte(registers.hl, registers.hl & ~(1 << 4)); }
+void res_4_hlp() { 
+	unsigned char value = mmu_read_byte(registers.hl);
+	RESET_BIT(value, 4);
+	mmu_write_byte(registers.hl, value); 
+}
 
 // 0xa7
 void res_4_a() { registers.a &= ~(1 << 4); }
@@ -968,7 +984,11 @@ void res_5_h() { registers.h &= ~(1 << 5); }
 void res_5_l() { registers.l &= ~(1 << 5); }
 
 // 0xae
-void res_5_hlp() { mmu_write_byte(registers.hl, registers.hl & ~(1 << 5)); }
+void res_5_hlp() { 
+	unsigned char value = mmu_read_byte(registers.hl);
+	RESET_BIT(value, 5);
+	mmu_write_byte(registers.hl, value); 
+}
 
 // 0xaf
 void res_5_a() { registers.a &= ~(1 << 5); }
@@ -992,7 +1012,11 @@ void res_6_h() { registers.h &= ~(1 << 6); }
 void res_6_l() { registers.l &= ~(1 << 6); }
 
 // 0xb6
-void res_6_hlp() { mmu_write_byte(registers.hl, registers.hl & ~(1 << 6)); }
+void res_6_hlp() { 
+	unsigned char value = mmu_read_byte(registers.hl);
+	RESET_BIT(value, 6);
+	mmu_write_byte(registers.hl, value); 
+}
 
 // 0xb7
 void res_6_a() { registers.a &= ~(1 << 6); }
@@ -1016,7 +1040,11 @@ void res_7_h() { registers.h &= ~(1 << 7); }
 void res_7_l() { registers.l &= ~(1 << 7); }
 
 // 0xbe
-void res_7_hlp() { mmu_write_byte(registers.hl, mmu_read_byte(registers.hl) & ~(1 << 7)); }
+void res_7_hlp() { 
+	unsigned char value = mmu_read_byte(registers.hl);
+	RESET_BIT(value, 7);
+	mmu_write_byte(registers.hl, value); 
+}
 
 // 0xbf
 void res_7_a() { registers.a &= ~(1 << 7); }
