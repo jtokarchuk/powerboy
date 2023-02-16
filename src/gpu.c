@@ -314,11 +314,12 @@ void gpu_render_sprites() {
 				unsigned char colour_num1 = GET_BIT(data2, colour_bit);
 				unsigned char colour_num2 = colour_num2 = GET_BIT(data1, colour_bit);
 
-				unsigned char colour_address = GET_BIT(attributes, 4)?0xFF49:0xFF48;
+				unsigned char colour_address = CHECK_BIT(attributes, 4)?0xFF49:0xFF48;
 				int colour_id = gpu_get_colour_id(colour_num1, colour_num2);
+				if (colour_id == 0) continue;
 				COLOUR pixel_colour = gpu_get_colour(colour_address, colour_id);
 		
-				if (colour_id == 0) continue;
+				
 
 				int x_pixel = 0 - tile_pixel;
 				x_pixel += 7;
@@ -326,7 +327,7 @@ void gpu_render_sprites() {
 				int pixel = x_pos + x_pixel;
 
 				display_framebuffer[pixel_offset + x_pixel].r = pixel_colour.r;
-				display_framebuffer[pixel_offset  + x_pixel].g = pixel_colour.g;
+				display_framebuffer[pixel_offset + x_pixel].g = pixel_colour.g;
 				display_framebuffer[pixel_offset + x_pixel].b = pixel_colour.b;
 			}
 		}
