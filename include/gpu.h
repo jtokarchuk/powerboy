@@ -40,6 +40,8 @@ struct gpu {
 	unsigned char control;
 	unsigned char scroll_x;
 	unsigned char scroll_y;
+	unsigned char window_x;
+	unsigned char window_y;
 	unsigned char scanline;
 	unsigned long tick;
 } extern gpu;
@@ -73,7 +75,9 @@ extern unsigned char gpu_tiles[384][8][8];
 extern COLOUR gpu_background_palette[4];
 extern COLOUR gpu_sprite_palette[2][4];
 
-
 void gpu_hblank();
-
+void gpu_render_tiles();
+void gpu_render_sprites();
+COLOUR gpu_get_colour(unsigned short address, int colour_id);
+int gpu_get_colour_id(unsigned char code1, unsigned char code2);
 void gpu_update_tile(unsigned short address, unsigned char value);

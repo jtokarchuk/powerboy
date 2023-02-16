@@ -35,7 +35,6 @@ void mmu_copy(unsigned short destination, unsigned short source, size_t length) 
 }
 
 unsigned char mmu_read_byte(unsigned short address) {
-	cpu.ticks += 3;
     if (address <= 0x7FFF) {
         return mmu.cartridge[address];
     }
@@ -64,6 +63,20 @@ unsigned char mmu_read_byte(unsigned short address) {
 	else if(address == 0xff43) return gpu.scroll_x;
 
 	else if(address == 0xff44) return gpu.scanline;
+
+	else if (address == 0xFF4A) return gpu.window_y;
+
+	else if (address == 0xFF4B) return gpu.window_x;
+
+	else if (address == 0xFF47) {
+		return mmu.io[address - 0xFF00];
+	}
+	else if (address == 0xFF48) {
+		return mmu.io[address - 0xFF00];
+	}
+	else if (address == 0xFF49) {
+		return mmu.io[address - 0xFF00];
+	}
 	
     else if(address == 0xFF00) {
 		if(!(mmu.io[0x00] & 0x20)) {
@@ -109,7 +122,6 @@ void mmu_write_byte(unsigned short address, unsigned char value) {
 	
 	else if(address >= 0x8000 && address <= 0x9FFF) {
 		mmu.vram[address - 0x8000] = value;
-		if(address <= 0x97ff) gpu_update_tile(address, value);
 	}
 	
 	if(address >= 0xc000 && address <= 0xdfff)
@@ -124,7 +136,9 @@ void mmu_write_byte(unsigned short address, unsigned char value) {
 	else if(address >= 0xff80 && address <= 0xfffe)
 		mmu.hram[address - 0xff80] = value;
 	
-	else if(address == 0xff40) gpu.control = value;
+	else if(address == 0xff40) {
+		gpu.control = value;
+	}
 
 	else if(address == 0xff42) gpu.scroll_y = value;
 
@@ -132,20 +146,21 @@ void mmu_write_byte(unsigned short address, unsigned char value) {
 
 	else if(address == 0xff46) mmu_copy(0xfe00, value << 8, 160); // OAM DMA
 	
-	else if(address == 0xff47) { // write only
-		int i;
-		for(i = 0; i < 4; i++) gpu_background_palette[i] = display_palette[(value >> (i * 2)) & 3];
+	else if(address == 0xff47) { 
+		mmu.io[address - 0xFF00] = value;
 	}
 	
 	else if(address == 0xff48) { // write only
-		int i;
-		for(i = 0; i < 4; i++) gpu_sprite_palette[0][i] = display_palette[(value >> (i * 2)) & 3];
+		mmu.io[address - 0xFF00] = value;
 	}
 	
 	else if(address == 0xff49) { // write only
-		int i;
-		for(i = 0; i < 4; i++) gpu_sprite_palette[1][i] = display_palette[(value >> (i * 2)) & 3];
+		mmu.io[address - 0xFF00] = value;
 	}
+
+	else if(address == 0xFF4A) gpu.window_y = value;
+	
+	else if (address == 0xFF4B) gpu.window_x = value;
 
 	else if (address == 0xFF04) { // Timer write resets it to 0
 		mmu.io[address - 0xFF00] = 0;

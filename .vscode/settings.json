@@ -16,4 +16,7 @@
             "binaryArgs": []
         }
     ],
+    "files.associations": {
+        "display.h": "c"
+    },
 }
