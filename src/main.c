@@ -18,9 +18,8 @@ int main(int argc, char *argv[]) {
     printf("PowerEmu Initializing...\n");
 
     char *filename;
-
-    printf("argc = %d\n", argc);
 	int i;
+
 	for(i = 1; i < argc; i++) {
 		filename = argv[i];
 	}
@@ -58,6 +57,7 @@ int main(int argc, char *argv[]) {
                     printf("Got close event\n");
 					application_closing = true;
                     break;
+                    
                 case SDL_KEYDOWN:
                     switch( gpu_sdl_event.key.keysym.sym ) {
                         case SDLK_ESCAPE:
@@ -100,6 +100,7 @@ int main(int argc, char *argv[]) {
                             break;
                     }
                     break;
+
                 case SDL_KEYUP:  /* Handle a KEYDOWN event */
                     switch( gpu_sdl_event.key.keysym.sym ) {
                         case SDLK_ESCAPE:
@@ -144,19 +145,11 @@ int main(int argc, char *argv[]) {
                     break;
                 case SDL_MOUSEMOTION:
                     break;
-                default: /* Report an unhandled event */
-                    // printf("Unknown Event: %d\n", gpu_sdl_event.type);
+                default: 
                     break;
             }
         }
 
-      // Gameboy-Doctor Printout  
-        fprintf(pFile, "A:%02hX F:%02hX B:%02hX C:%02hX D:%02hX E:%02hX H:%02hX L:%02hX SP:%04hX PC:%04hX PCMEM:%02hX,%02hX,%02hX,%02hX\n", \
-                registers.a, registers.f, registers.b, registers.c, registers.d, registers.e, registers.h, registers.l, registers.sp, \
-                registers.pc, mmu_read_byte(registers.pc), mmu_read_byte(registers.pc + 1), mmu_read_byte(registers.pc + 2), mmu_read_byte(registers.pc + 3));
-      
-        
-        
         timer_emulate(cpu.ticks - cpu.last_ticks);
         interrupts_emulate();
         if (!cpu.stopped) {
@@ -164,13 +157,10 @@ int main(int argc, char *argv[]) {
         }
         
         gpu_emulate();
-        
-        
     }
     
     gpu_exit();
     printf("PowerEmu Shutting Down\n");
-    fclose(pFile);
     return 0;
 }
 

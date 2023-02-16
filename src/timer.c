@@ -5,9 +5,9 @@
 #include "interrupts.h"
 #include "cpu.h"
 
-int timer_counter = 0;
-int timer_dividercounter = 0;
-int timer_frequency = 0;
+unsigned int timer_counter = 0;
+unsigned int timer_dividercounter = 0;
+unsigned int timer_frequency = 0;
 
 void timer_reset() {
     timer_counter = 0;
@@ -20,6 +20,7 @@ void timer_emulate(int cycles) {
     timer_dividercounter += cycles;
 
     if (CHECK_BIT(timer_attributes, 2)) {
+        
         timer_counter += cycles;
 
         if (timer_counter >= timer_frequency) {

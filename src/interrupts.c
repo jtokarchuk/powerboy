@@ -7,6 +7,11 @@
 struct interrupt interrupt;
 
 void interrupts_emulate() {
+	if (cpu.halted) {
+		if (interrupt.flags) {
+			cpu.halted = false;
+		}
+	}
 	if(interrupt.master && interrupt.enable && interrupt.flags) {
 		unsigned char fire = interrupt.enable & interrupt.flags;
 		

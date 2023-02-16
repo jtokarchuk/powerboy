@@ -24,22 +24,19 @@
 #define SET_BIT(var, pos) ((var) |= (1 << (pos)))
 #define RESET_BIT(var, pos) ((var) &= ~(1 << (pos)))
 
-#define CPU_CLOCKSPEED 4194304;
-
-extern FILE *pFile;
-
 unsigned short cpu_get_combined_registers(unsigned char high, unsigned char low);
 unsigned char cpu_compile_flag_register();
-void cpu_set_combined_registers(unsigned char high, unsigned char low);
+
 void cpu_emulate();
 void cpu_reset();
 void cpu_unimplemented_instruction();
 void cpu_print_registers();
 
 struct cpu {
-    bool stopped;
+    bool stopped;   // replace with emulation paused
     unsigned short instruction;
     float emulation_speed;
+    bool halted;
     int ticks;
     int last_ticks;
     bool flag_zero;

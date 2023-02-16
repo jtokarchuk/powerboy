@@ -58,9 +58,13 @@ unsigned char mmu_read_byte(unsigned short address) {
         return mmu.io[address - 0xFF00];
     }
     else if(address == 0xff40) return gpu.control;
+
 	else if(address == 0xff42) return gpu.scroll_y;
+
 	else if(address == 0xff43) return gpu.scroll_x;
+
 	else if(address == 0xff44) return gpu.scanline;
+	
     else if(address == 0xFF00) {
 		if(!(mmu.io[0x00] & 0x20)) {
 			return (unsigned char)(0xc0 | keys.keys1 | 0x10);
@@ -75,6 +79,7 @@ unsigned char mmu_read_byte(unsigned short address) {
 	} 
 	
 	else if(address == 0xff0f) return interrupt.flags;
+
 	else if(address == 0xffff) return interrupt.enable;
 	
 	else if(address >= 0xff80 && address <= 0xfffe)
@@ -120,8 +125,11 @@ void mmu_write_byte(unsigned short address, unsigned char value) {
 		mmu.hram[address - 0xff80] = value;
 	
 	else if(address == 0xff40) gpu.control = value;
+
 	else if(address == 0xff42) gpu.scroll_y = value;
+
 	else if(address == 0xff43) gpu.scroll_x = value;
+
 	else if(address == 0xff46) mmu_copy(0xfe00, value << 8, 160); // OAM DMA
 	
 	else if(address == 0xff47) { // write only
@@ -138,10 +146,12 @@ void mmu_write_byte(unsigned short address, unsigned char value) {
 		int i;
 		for(i = 0; i < 4; i++) gpu_sprite_palette[1][i] = display_palette[(value >> (i * 2)) & 3];
 	}
+
 	else if (address == 0xFF04) { // Timer write resets it to 0
 		mmu.io[address - 0xFF00] = 0;
 		timer_dividercounter = 0;
 	}
+
 	else if (address == 0xFF07) {
 		mmu.io[address - 0xFF00] = value;
 		int clock_speed_value = value & 0x03;
@@ -154,13 +164,14 @@ void mmu_write_byte(unsigned short address, unsigned char value) {
 			case 3: clock_speed = 256; break;
 			default: printf("Timer error! Attempt to use clock speed %04d", clock_speed); break;
 		}
-		if (clock_speed > timer_frequency) {
-			timer_frequency = clock_speed;
-		}
+		timer_frequency = clock_speed;
+		
 	}
+
 	else if(address == 0xff0f) {
 		interrupt.flags = value; 
 	}
+
 	else if(address >= 0xff00 && address <= 0xff7f) {
 		mmu.io[address - 0xff00] = value;
 	}

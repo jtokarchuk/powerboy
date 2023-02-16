@@ -10,7 +10,6 @@
 #include "keys.h"
 
 struct cpu cpu;
-FILE *pFile;
 
 const struct cpu_instruction cpu_instructions[256] = {
     { "NOP", 0, 4, nop },                // 0x00
@@ -282,6 +281,7 @@ void cpu_reset() {
 
     cpu.instruction = 0;
     cpu.stopped = false;
+    cpu.halted = false;
     cpu.emulation_speed = 1;
     cpu.ticks = 0;
     cpu.last_ticks = 0;
@@ -332,7 +332,6 @@ void cpu_reset() {
 	keys.left = 1;
 	keys.up = 1;
 	keys.down = 1;
-    pFile = fopen("./cpu_log.txt", "a");
 
     memset(gpu_tiles, 0, sizeof(gpu_tiles));
 	memset(display_framebuffer, 255, sizeof(display_framebuffer));
@@ -373,9 +372,15 @@ void cpu_reset() {
 
 void cpu_emulate() {
     if (cpu.stopped) return;
+
+    if (cpu.halted) {
+        cpu.ticks += 4; return;
+    }
+    
     cpu.instruction = 0;
     cpu.last_ticks = cpu.ticks;
     unsigned short operand = 0;
+
     
     cpu.instruction = mmu_read_byte(registers.pc++);
     cpu.last_instruction = cpu.instruction;
@@ -1103,10 +1108,7 @@ void rrca() {
 void stop() { cpu.stopped = true; }
 
 void halt() {
-	if(interrupt.flags || interrupt.enable < 0) {
-		//HALT EXECUTION UNTIL AN INTERRUPT OCCURS
-	}
-	else registers.pc++;
+	cpu.halted = true;
 }
 
 void rla() {
