@@ -18,6 +18,7 @@
     ],
     "files.associations": {
         "display.h": "c",
-        "string.h": "c"
+        "string.h": "c",
+        "mmu.h": "c"
     },
 }

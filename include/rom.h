@@ -2,9 +2,14 @@
 #include "platform.h"
 
 #define ROM_OFFSET_NAME 0x134
+#define ROM_OFFSET_CGB_FLAG 0x143
+#define ROM_OFFSET_NEW_LICENSEE_CODE_1 0x144
+#define ROM_OFFSET_NEW_LICENSEE_CODE_2 0x145
 #define ROM_OFFSET_TYPE 0x147
 #define ROM_OFFSET_ROM_SIZE 0x148
 #define ROM_OFFSET_RAM_SIZE 0x149
+#define ROM_OFFSET_OLD_LICENSEE_CODE 0x14B
+
 
 enum romType {
 	ROM_PLAIN = 0x00,
@@ -35,7 +40,15 @@ enum romType {
 	ROM_HUDSON_HUC1 = 0xFF,
 };
 
+enum CGB_flag {
+	BACKWARDS_COMPATIBLE = 0x80,
+	CGB_ONLY = 0xC0,
+};
+
 extern const char *romTypeString[256];
+extern const char *romOldLicenseeCode[256];
+extern const char *romNewLicenseeCode[256];
+extern const char *romCGBCompatability[256];
+extern unsigned char ASCIILookup[256];
 
 extern unsigned char rom_load(char *filename);
-extern void rom_unload();
