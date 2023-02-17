@@ -15,7 +15,19 @@
 #include <SDL.h>
 #include <stdbool.h>
 #include <assert.h>
-#include "display.h"
+
+struct rgb {
+    unsigned char r;
+    unsigned char g;
+    unsigned char b;
+};
+
+
+typedef struct rgb COLOUR;
+
+extern COLOUR gpu_framebuffer[160 * 144]; 
+extern const COLOUR gpu_palette[4];
+extern void gpu_render_scanline();
 
 bool gpu_init();
 void gpu_exit();
@@ -40,6 +52,8 @@ struct gpu {
 	unsigned char control;
 	unsigned char scroll_x;
 	unsigned char scroll_y;
+	unsigned char window_x;
+	unsigned char window_y;
 	unsigned char scanline;
 	unsigned long tick;
 } extern gpu;
@@ -73,7 +87,9 @@ extern unsigned char gpu_tiles[384][8][8];
 extern COLOUR gpu_background_palette[4];
 extern COLOUR gpu_sprite_palette[2][4];
 
-
 void gpu_hblank();
+void gpu_render_tiles();
+void gpu_render_sprites();
 
+int gpu_get_colour_id(unsigned char code1, unsigned char code2);
 void gpu_update_tile(unsigned short address, unsigned char value);

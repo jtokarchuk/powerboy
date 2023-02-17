@@ -21,7 +21,7 @@ void timer_emulate(int cycles) {
 
     if (CHECK_BIT(timer_attributes, 2)) {
         
-        timer_counter += cycles;
+        timer_counter += cycles * 4;
 
         if (timer_counter >= timer_frequency) {
             
@@ -43,8 +43,8 @@ void timer_emulate(int cycles) {
     }
 
     // Divider register
-    if (timer_dividercounter > 256) {
-        timer_dividercounter = 0;
+    if (timer_dividercounter >= 256) {
+        timer_dividercounter -= 256;
         mmu.io[0xFF04 - 0xFF00]++;
     }
 
