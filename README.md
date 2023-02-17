@@ -2,7 +2,7 @@
 Gameboy/Gameboy Color emulation project. Mostly just a fun way for me to reinvent the wheel on something fun.
 
 ## Goals
- - [x] Passes all 11 Blargg CPU Instruction Tests
+ - [x] Passes all 11 [Blargg CPU Instruction Tests](https://github.com/retrio/gb-test-roms)
  - [ ] RAM bank support
  - [ ] ROM bank support
  - [ ] CGB support
@@ -33,5 +33,5 @@ Gameboy/Gameboy Color emulation project. Mostly just a fun way for me to reinven
 | Spacebar      | Select        |
 
 ## References
-- Cinoop - https://github.com/CTurt/Cinoop
-- Gameboy Doctor - https://robertheaton.com/gameboy-doctor/
+- [Cinoop](https://github.com/CTurt/Cinoop)
+- [Gameboy Doctor](https://robertheaton.com/gameboy-doctor/)
