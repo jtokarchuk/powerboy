@@ -279,7 +279,7 @@ void cpu_reset() {
     memcpy(mmu.io, mmu_io_reset, sizeof(mmu.io));
 
     cpu.instruction = 0;
-    cpu.stopped = false;
+    cpu.halted = false;
     cpu.halted = false;
     cpu.emulation_speed = 1;
     cpu.ticks = 0;
@@ -370,7 +370,6 @@ void cpu_reset() {
 }
 
 void cpu_emulate() {
-    if (cpu.stopped) return;
 
     if (cpu.halted) {
         cpu.ticks += 4; return;
@@ -421,7 +420,7 @@ void cpu_unimplemented_instruction() {
     strcpy(mnemonic, cpu_instructions[cpu.last_instruction].mnemonic);
     printf("Unimplemented Instruction: 0x%02x: %s\n", cpu.last_instruction, mnemonic);
     printf("Halting CPU\n");
-    cpu.stopped = true;
+    cpu.halted = true;
 }
 
 static unsigned char inc(unsigned char value) {
@@ -1104,7 +1103,7 @@ void rrca() {
 	FLAGS_CLEAR(FLAGS_NEGATIVE | FLAGS_ZERO | FLAGS_HALFCARRY);
 }
 
-void stop() { cpu.stopped = true; }
+void stop() { cpu.halted = true; }
 
 void halt() {
 	cpu.halted = true;

@@ -34,7 +34,6 @@ void cpu_unimplemented_instruction();
 void cpu_print_registers();
 
 struct cpu {
-    bool stopped;   // replace with emulation paused
     unsigned short instruction;
     float emulation_speed;
     bool halted;

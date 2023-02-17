@@ -65,8 +65,6 @@ void gpu_draw_framebuffer()
 }
 void gpu_exit()
 {
-	// Deallocate surface
-
 	// Destroy window
 	SDL_DestroyWindow(gpu_window);
 	gpu_window = NULL;
