@@ -1,7 +1,7 @@
 # PowerBoy
 Gameboy/Gameboy Color emulation project. Mostly just a fun way for me to reinvent the wheel on something fun.
 
-## Goals
+## Notes
  - [x] Passes all 11 [Blargg CPU Instruction Tests](https://github.com/retrio/gb-test-roms)
 
 ## Playable Games
