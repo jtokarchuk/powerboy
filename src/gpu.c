@@ -48,8 +48,7 @@ bool gpu_init()
 	{
 		// Get window surface
 		SDL_CreateWindowAndRenderer(160, 144, 0, &gpu_window, &gpu_renderer);
-		SDL_SetWindowSize(gpu_window, GAMEBOY_WIDTH * 3, GAMEBOY_WIDTH * 3);
-		SDL_SetWindowResizable(gpu_window, SDL_TRUE);
+		SDL_SetWindowSize(gpu_window, GAMEBOY_WIDTH * 3, GAMEBOY_HEIGHT * 3);
 		gpu_texture = SDL_CreateTexture(gpu_renderer, SDL_PIXELFORMAT_RGB24, SDL_TEXTUREACCESS_STREAMING, 160, 144);
 	}
 
@@ -92,7 +91,7 @@ void gpu_emulate(void)
 		{
 			gpu_hblank();
 
-			if (gpu.scanline == 143)
+			if (gpu.scanline == 144)
 			{
 				if (interrupt.enable & INTERRUPTS_VBLANK)
 				{
@@ -345,7 +344,7 @@ void gpu_render_sprites()
 			}
 
 			line *= 2;
-			
+
 			unsigned short tile_address = (0x8000 + (tile_location * 16)) + line;
 
 			unsigned char data1 = mmu_read_byte(tile_address);
