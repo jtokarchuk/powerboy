@@ -3,8 +3,11 @@ Gameboy/Gameboy Color emulation project. Mostly just a fun way for me to reinven
 
 ## Goals
  - [x] Passes all 11 Blargg CPU Instruction Tests
- - [ ] Add RAM Banking
- - [ ] Add ROM Banking
+ - [ ] RAM bank support
+ - [ ] ROM bank support
+ - [ ] CGB support
+ - [ ] Sound support
+ - [ ] Catch a pidgey on something I made.
 
 ## Playable Games
 - Tetris
