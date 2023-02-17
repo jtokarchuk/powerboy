@@ -322,8 +322,8 @@ void gpu_render_sprites()
 		unsigned char tile_location = mmu_read_byte(0xFE00 + index + 2);
 		unsigned char attributes = mmu_read_byte(0xFe00 + index + 3);
 
-		bool x_flip = CHECK_BIT(attributes, 6);
-		bool y_flip = CHECK_BIT(attributes, 5);
+		bool x_flip = CHECK_BIT(attributes, 5);
+		bool y_flip = CHECK_BIT(attributes, 6);
 
 		int y_size = 8;
 
@@ -345,6 +345,7 @@ void gpu_render_sprites()
 			}
 
 			line *= 2;
+			
 			unsigned short tile_address = (0x8000 + (tile_location * 16)) + line;
 
 			unsigned char data1 = mmu_read_byte(tile_address);
