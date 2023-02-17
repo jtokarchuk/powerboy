@@ -10,8 +10,6 @@
 #define GPU_CONTROL_WINDOWTILEMAP (1 << 6)
 #define GPU_CONTROL_DISPLAYENABLE (1 << 7)
 
-#define GPU_MAX_FPS 60
-
 #include <SDL.h>
 #include <stdbool.h>
 #include <assert.h>
@@ -22,31 +20,27 @@ struct rgb {
     unsigned char b;
 };
 
+extern SDL_Window* gpu_window;
+extern SDL_Surface* gpu_surface;
+extern SDL_Renderer* gpu_renderer;
+extern SDL_Texture* gpu_texture;
 
 typedef struct rgb COLOUR;
+extern int gpu_scale_factor;
 
 extern COLOUR gpu_framebuffer[160 * 144]; 
 extern const COLOUR gpu_palette[4];
-extern void gpu_render_scanline();
+
+extern COLOUR gpu_background_palette[4];
+extern COLOUR gpu_sprite_palette[2][4];
 
 bool gpu_init();
 void gpu_exit();
 void gpu_emulate();
 void gpu_draw_framebuffer();
+extern void gpu_render_scanline();
 
 extern SDL_Event gpu_sdl_event;
-extern int gpu_counted_frames;
-
-//The window we'll be rendering to
-extern SDL_Window* gpu_window;
-    
-//The surface contained by the window
-extern SDL_Surface* gpu_surface;
-
-extern SDL_Renderer* gpu_renderer;
-
-//The image we will load and show on the screen
-extern SDL_Texture* gpu_texture;
 
 struct gpu {
 	unsigned char control;
@@ -81,11 +75,6 @@ struct sprite {
 		unsigned char priority : 1;
 	#endif
 };
-
-extern unsigned char gpu_tiles[384][8][8];
-
-extern COLOUR gpu_background_palette[4];
-extern COLOUR gpu_sprite_palette[2][4];
 
 void gpu_hblank();
 void gpu_render_tiles();

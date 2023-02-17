@@ -332,9 +332,7 @@ void cpu_reset() {
 	keys.up = 1;
 	keys.down = 1;
 
-    memset(gpu_tiles, 0, sizeof(gpu_tiles));
 	memset(gpu_framebuffer, 255, sizeof(gpu_framebuffer));
-
 	
 	mmu_write_byte(0xFF05, 0);
 	mmu_write_byte(0xFF06, 0);

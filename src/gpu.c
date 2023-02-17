@@ -29,6 +29,7 @@ const COLOUR gpu_palette[4] = {
     { 0, 0, 0 },
 };
 
+int gpu_scale_factor = 3;
 
 struct gpu gpu;
 
@@ -48,7 +49,8 @@ bool gpu_init()
 	{
 		// Get window surface
 		SDL_CreateWindowAndRenderer(160, 144, 0, &gpu_window, &gpu_renderer);
-		SDL_SetWindowSize(gpu_window, GAMEBOY_WIDTH * 3, GAMEBOY_HEIGHT * 3);
+		SDL_SetWindowTitle(gpu_window, "PowerBoy");
+		SDL_SetWindowSize(gpu_window, GAMEBOY_WIDTH * gpu_scale_factor, GAMEBOY_HEIGHT * gpu_scale_factor);
 		gpu_texture = SDL_CreateTexture(gpu_renderer, SDL_PIXELFORMAT_RGB24, SDL_TEXTUREACCESS_STREAMING, 160, 144);
 	}
 

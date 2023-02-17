@@ -81,18 +81,18 @@ void ld_hlp_d();
 void ld_hlp_e();
 void ld_hlp_h();
 void ld_hlp_l();
+
 void ld_hlp_a();
 
-
-void ld_a_dep();
-
-void ld_a_hlp();
 void ld_b_hlp();
 void ld_c_hlp();
 void ld_d_hlp();
 void ld_e_hlp();
 void ld_h_hlp();
 void ld_l_hlp();
+
+void ld_a_dep();
+void ld_a_hlp();
 
 void ld_a_b();
 void ld_a_c();
@@ -253,7 +253,6 @@ void add_hl_hl();
 void add_hl_sp();
 
 void add_sp_n(char operand);
-
 
 void sub_n(unsigned char operand);
 void sub_a();
