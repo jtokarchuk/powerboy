@@ -2,7 +2,6 @@
 #include <string.h>
 #include "cpu.h"
 #include "gpu.h"
-#include "display.h"
 #include "registers.h"
 #include "mmu.h"
 #include "interrupts.h"
@@ -303,20 +302,20 @@ void cpu_reset() {
     interrupt.enable = 0;
     interrupt.flags = 0;
 
-    gpu_background_palette[0] = display_palette[0];
-	gpu_background_palette[1] = display_palette[1];
-	gpu_background_palette[2] = display_palette[2];
-	gpu_background_palette[3] = display_palette[3];
+    gpu_background_palette[0] = gpu_palette[0];
+	gpu_background_palette[1] = gpu_palette[1];
+	gpu_background_palette[2] = gpu_palette[2];
+	gpu_background_palette[3] = gpu_palette[3];
 	
-	gpu_sprite_palette[0][0] = display_palette[0];
-	gpu_sprite_palette[0][1] = display_palette[1];
-	gpu_sprite_palette[0][2] = display_palette[2];
-	gpu_sprite_palette[0][3] = display_palette[3];
+	gpu_sprite_palette[0][0] = gpu_palette[0];
+	gpu_sprite_palette[0][1] = gpu_palette[1];
+	gpu_sprite_palette[0][2] = gpu_palette[2];
+	gpu_sprite_palette[0][3] = gpu_palette[3];
 	
-	gpu_sprite_palette[1][0] = display_palette[0];
-	gpu_sprite_palette[1][1] = display_palette[1];
-	gpu_sprite_palette[1][2] = display_palette[2];
-	gpu_sprite_palette[1][3] = display_palette[3];
+	gpu_sprite_palette[1][0] = gpu_palette[0];
+	gpu_sprite_palette[1][1] = gpu_palette[1];
+	gpu_sprite_palette[1][2] = gpu_palette[2];
+	gpu_sprite_palette[1][3] = gpu_palette[3];
 	
 	gpu.control = 0;
 	gpu.scroll_x = 0;
@@ -334,7 +333,7 @@ void cpu_reset() {
 	keys.down = 1;
 
     memset(gpu_tiles, 0, sizeof(gpu_tiles));
-	memset(display_framebuffer, 255, sizeof(display_framebuffer));
+	memset(gpu_framebuffer, 255, sizeof(gpu_framebuffer));
 
 	
 	mmu_write_byte(0xFF05, 0);

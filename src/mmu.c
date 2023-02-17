@@ -67,16 +67,6 @@ unsigned char mmu_read_byte(unsigned short address) {
 	else if (address == 0xFF4A) return gpu.window_y;
 
 	else if (address == 0xFF4B) return gpu.window_x;
-
-	else if (address == 0xFF47) {
-		return mmu.io[address - 0xFF00];
-	}
-	else if (address == 0xFF48) {
-		return mmu.io[address - 0xFF00];
-	}
-	else if (address == 0xFF49) {
-		return mmu.io[address - 0xFF00];
-	}
 	
     else if(address == 0xFF00) {
 		if(!(mmu.io[0x00] & 0x20)) {
@@ -147,15 +137,15 @@ void mmu_write_byte(unsigned short address, unsigned char value) {
 	else if(address == 0xff46) mmu_copy(0xfe00, value << 8, 160); // OAM DMA
 	
 	else if(address == 0xff47) { 
-		mmu.io[address - 0xFF00] = value;
+		for(int i = 0; i < 4; i++) gpu_background_palette[i] = gpu_palette[(value >> (i * 2)) & 3];
 	}
 	
 	else if(address == 0xff48) { // write only
-		mmu.io[address - 0xFF00] = value;
+		for(int i = 0; i < 4; i++) gpu_sprite_palette[0][i] = gpu_palette[(value >> (i * 2)) & 3];
 	}
 	
 	else if(address == 0xff49) { // write only
-		mmu.io[address - 0xFF00] = value;
+		for(int i = 0; i < 4; i++) gpu_sprite_palette[1][i] = gpu_palette[(value >> (i * 2)) & 3];
 	}
 
 	else if(address == 0xFF4A) gpu.window_y = value;
