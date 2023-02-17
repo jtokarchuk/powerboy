@@ -35,3 +35,4 @@ Gameboy/Gameboy Color emulation project. Mostly just a fun way for me to reinven
 ## References
 - [Cinoop](https://github.com/CTurt/Cinoop)
 - [Gameboy Doctor](https://robertheaton.com/gameboy-doctor/)
+- [Pandocs](https://gbdev.io/pandocs/)
