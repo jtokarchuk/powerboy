@@ -1,10 +1,6 @@
 # PowerBoy
 Gameboy/Gameboy Color emulation project. Mostly just a fun way for me to reinvent the wheel on something fun.
 
-## References
-- Cinoop - https://github.com/CTurt/Cinoop
-- Gameboy Doctor - https://robertheaton.com/gameboy-doctor/
-
 ## Goals
  - [x] Passes all 11 Blargg CPU Instruction Tests
  - [ ] Add RAM Banking
@@ -13,6 +9,9 @@ Gameboy/Gameboy Color emulation project. Mostly just a fun way for me to reinven
 ## Playable Games
 - Tetris
 - Dr. Mario
+
+## Dependencies
+- SDL2
 
 ## Known issues
 - Rom banking not supported yet, only 32kb games with no mappers.
@@ -30,3 +29,6 @@ Gameboy/Gameboy Color emulation project. Mostly just a fun way for me to reinven
 | Return Key    | Start         |
 | Spacebar      | Select        |
 
+## References
+- Cinoop - https://github.com/CTurt/Cinoop
+- Gameboy Doctor - https://robertheaton.com/gameboy-doctor/
