@@ -1,5 +1,5 @@
 # PowerBoy
-Gameboy/Gameboy Color emulation project
+Gameboy/Gameboy Color emulation project. Mostly just a fun way for me to reinvent the wheel on something fun.
 
 ## References
 - Cinoop - https://github.com/CTurt/Cinoop
@@ -16,6 +16,7 @@ Gameboy/Gameboy Color emulation project
 
 ## Known issues
 - Rom banking not supported yet, only 32kb games with no mappers.
+- Has not been tested / compiled outside of Windows, expect issues.
 
 ## Controls
 | Keyboard Key  | Gameboy Key   |
