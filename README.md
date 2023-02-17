@@ -2,8 +2,8 @@
 Gameboy/Gameboy Color emulation project
 
 ## References
-Cinoop - https://github.com/CTurt/Cinoop
-Gameboy Doctor - https://robertheaton.com/gameboy-doctor/
+- Cinoop - https://github.com/CTurt/Cinoop
+- Gameboy Doctor - https://robertheaton.com/gameboy-doctor/
 
 ## Blargg CPU instruction tests
  - Passes all 11
@@ -13,7 +13,7 @@ Gameboy Doctor - https://robertheaton.com/gameboy-doctor/
 
 ## Controls
 | Keyboard Key  | Gameboy Key   |
-|-------------------------------|
+| ------------- | ------------- |
 | Up Arrow      | UP            |
 | Down Arrow    | DOWN          |
 | Left Arrow    | Left          |
