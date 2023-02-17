@@ -370,13 +370,14 @@ void cpu_reset() {
 }
 
 void cpu_emulate() {
+    
+    cpu.ticks = 0;
 
     if (cpu.halted) {
         cpu.ticks += 4; return;
     }
     
     cpu.instruction = 0;
-    cpu.last_ticks = cpu.ticks;
     unsigned short operand = 0;
 
     

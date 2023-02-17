@@ -164,18 +164,16 @@ int main(int argc, char *argv[]) {
             while (cpu_cycles <= cpu_max) {
                 cpu_emulate();
                 gpu_emulate();
-                timer_emulate(cpu.ticks - cpu.last_ticks);
+                timer_emulate(cpu.ticks);
                 interrupts_emulate();
-                cpu_cycles += cpu.ticks - cpu.last_ticks;  
+                cpu_cycles += cpu.ticks;  
             }
             cpu_cycles = 0;
-            b = a;
-            
-            
+            b = a;   
         } 
-           
     }
     
+
     gpu_exit();
     printf("PowerEmu Shutting Down\n");
     return 0;
