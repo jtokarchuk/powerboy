@@ -3,14 +3,6 @@ Gameboy/Gameboy Color emulation project. Mostly just a fun way for me to reinven
 
 ## Goals
  - [x] Passes all 11 [Blargg CPU Instruction Tests](https://github.com/retrio/gb-test-roms)
- - [ ] RAM bank support
- - [ ] ROM bank support
- - [ ] Catch a Pidgey on something I made
- - [ ] Multiple platform support
- - [ ] Real-Time Debugger
- - [ ] CGB support
- - [ ] Sound support
- - [ ] GUI
 
 ## Playable Games
 - Tetris
