@@ -5,8 +5,8 @@ Gameboy/Gameboy Color emulation project
 - Cinoop - https://github.com/CTurt/Cinoop
 - Gameboy Doctor - https://robertheaton.com/gameboy-doctor/
 
-## Blargg CPU instruction tests
- - Passes all 11
+## Notes
+ - Passes all 11 Blargg CPU Instruction Tests
 
 ## Known issues
 - Rom banking not supported yet, only 32kb games with no mappers.
