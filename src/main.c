@@ -14,8 +14,6 @@
 
 bool application_closing = false;
 
-
-
 int main(int argc, char *argv[]) {
     printf("PowerEmu Initializing...\n");
     unsigned int a = SDL_GetTicks();
@@ -55,7 +53,9 @@ int main(int argc, char *argv[]) {
     printf("ROM Loaded, starting emulation\n");
 
     while( !application_closing ) {
+        a = SDL_GetTicks();
 
+        
         while (SDL_PollEvent(&gpu_sdl_event)) {
 			switch (gpu_sdl_event.type) {
 				case SDL_QUIT:
@@ -106,7 +106,7 @@ int main(int argc, char *argv[]) {
                     }
                     break;
 
-                case SDL_KEYUP:  /* Handle a KEYDOWN event */
+                case SDL_KEYUP:  // Handle a KEYDOWN event 
                     switch( gpu_sdl_event.key.keysym.sym ) {
                         case SDLK_ESCAPE:
                             application_closing = true;
@@ -153,28 +153,33 @@ int main(int argc, char *argv[]) {
                 default: 
                     break;
             }
+           
         }
         
-        a = SDL_GetTicks();
-        delta = a - b;
-
         
-        //if (delta > 1000/60.0) {
-            if (!cpu.stopped) {
-                int cpu_cycles = 0;
-                int cpu_max =  69905;
-
-                while (cpu_cycles < cpu_max) {
+        
+        delta = a - b;
+        if (delta > 1000/60.0) {  
+            int cpu_cycles = 0;
+            int cpu_max = 69905;
+            
+            while (cpu_cycles <= cpu_max) {
+                
+                if (!cpu.stopped) {
                     cpu_emulate();
-                    gpu_emulate();
-                    timer_emulate(cpu.ticks - cpu.last_ticks);
-                    interrupts_emulate();
-                    cpu_cycles += cpu.ticks;
                 }
-                cpu_cycles = 0;
+
+                gpu_emulate();
+                timer_emulate(cpu.ticks - cpu.last_ticks);
+                interrupts_emulate();
+                cpu_cycles += cpu.ticks - cpu.last_ticks;  
             }
-          //  b = a;
-        //}
+            cpu_cycles = 0;
+            b = a;
+            
+            
+        } 
+           
     }
     
     gpu_exit();

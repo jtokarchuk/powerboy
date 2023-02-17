@@ -366,7 +366,7 @@ void cpu_reset() {
 	mmu_write_byte(0xFF49, 0xFF);
 	mmu_write_byte(0xFF4A, 0x00);
 	mmu_write_byte(0xFF4B, 0x00);
-	mmu_write_byte(0xFFFF, 0x00);
+	mmu_write_byte(0xFFFF, 0x00);  
 }
 
 void cpu_emulate() {

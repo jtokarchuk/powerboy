@@ -21,7 +21,7 @@ void timer_emulate(int cycles) {
 
     if (CHECK_BIT(timer_attributes, 2)) {
         
-        timer_counter += cycles * 4;
+        timer_counter += cycles;
 
         if (timer_counter >= timer_frequency) {
             

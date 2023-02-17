@@ -47,7 +47,6 @@ bool gpu_init()
 	else
 	{
 		// Get window surface
-		SDL_SetHint(SDL_HINT_RENDER_VSYNC, "1");
 		SDL_CreateWindowAndRenderer(160, 144, 0, &gpu_window, &gpu_renderer);
 		SDL_SetWindowSize(gpu_window, GAMEBOY_WIDTH * 3, GAMEBOY_WIDTH * 3);
 		SDL_SetWindowResizable(gpu_window, SDL_TRUE);
@@ -86,11 +85,7 @@ void gpu_emulate(void)
 		GPU_MODE_VRAM = 3,
 	} static gpuMode = GPU_MODE_HBLANK;
 
-	static int lastTicks = 0;
-
-	gpu.tick += cpu.ticks - lastTicks;
-
-	lastTicks = cpu.ticks;
+	gpu.tick += cpu.ticks - cpu.last_ticks;
 
 	switch (gpuMode)
 	{
@@ -126,7 +121,7 @@ void gpu_emulate(void)
 				gpu.scanline = 0;
 				gpuMode = GPU_MODE_OAM;
 			}
-
+			gpu_draw_framebuffer();
 			gpu.tick -= 456;
 		}
 

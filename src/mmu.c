@@ -105,8 +105,6 @@ unsigned short mmu_read_short_from_stack() {
 }
 
 void mmu_write_byte(unsigned short address, unsigned char value) {
-	cpu.ticks += 3;
-
     if(address >= 0xA000 && address <= 0xbFFF)
 		mmu.sram[address - 0xA000] = value;
 	

@@ -1,15 +1,25 @@
 # PowerBoy
-gameboy/gameboy color emulation project
+Gameboy/Gameboy Color emulation project
 
 ## References
 Cinoop - https://github.com/CTurt/Cinoop
 Gameboy Doctor - https://robertheaton.com/gameboy-doctor/
-https://github.com/mpostaire/gbmulator/blob/master/src/emulator/cpu.c
 
-# Blargg CPU tests
+## Blargg CPU instruction tests
  - Passes all 11
 
-# Known issues
-- Sprites looking empty in tetris and dr mario until they land? after gpu rewrite
-- timer very fast, think need to limit screen to o60fps
-- Rom banking not enabled
+## Known issues
+- Rom banking not supported yet, only 32kb games with no mappers.
+
+## Controls
+| Keyboard Key  | Gameboy Key   |
+|-------------------------------|
+| Up Arrow      | UP            |
+| Down Arrow    | DOWN          |
+| Left Arrow    | Left          |
+| Right Arrow   | Right         |
+| Z Key         | B             |
+| X Key         | A             |
+| Return Key    | Start         |
+| Spacebar      | Select        |
+
