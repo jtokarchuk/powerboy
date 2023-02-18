@@ -18,8 +18,8 @@ Gameboy/Gameboy Color emulation project. Mostly just a way for me to reinvent th
 ## Controls
 | Keyboard Key  | Gameboy Key   |
 | ------------- | ------------- |
-| Up Arrow      | UP            |
-| Down Arrow    | DOWN          |
+| Up Arrow      | Up            |
+| Down Arrow    | Down          |
 | Left Arrow    | Left          |
 | Right Arrow   | Right         |
 | Z Key         | B             |
